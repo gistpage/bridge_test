@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>WSD Bridge H5 测试</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      background: #f4f6fa;
+    }
+
+    .banner {
+      background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+      color: #fff;
+      padding: 32px 20px 20px 20px;
+      text-align: center;
+      border-bottom-left-radius: 32px;
+      border-bottom-right-radius: 32px;
+      box-shadow: 0 2px 8px rgba(106, 17, 203, 0.08);
+    }
+
+    .banner h1 {
+      margin: 0 0 8px 0;
+      font-size: 2.2em;
+      letter-spacing: 2px;
+    }
+
+    .banner p {
+      margin: 0;
+      font-size: 1.1em;
+      opacity: 0.92;
+    }
+
+    .env-status {
+      margin: 18px auto 0 auto;
+      max-width: 520px;
+      padding: 10px 0;
+      font-size: 1.1em;
+      font-weight: bold;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .env-ok {
+      background: #e6ffed;
+      color: #237804;
+      border: 1px solid #b7eb8f;
+    }
+
+    .env-fail {
+      background: #fff1f0;
+      color: #cf1322;
+      border: 1px solid #ffa39e;
+    }
+
+    .section {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      padding: 22px 18px 18px 18px;
+      margin: 28px auto 0 auto;
+      max-width: 520px;
+      border-left: 6px solid #6a11cb;
+      position: relative;
+    }
+
+    .section h2 {
+      color: #2575fc;
+      margin-top: 0;
+      font-size: 1.25em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section .icon {
+      font-size: 1.3em;
+      margin-right: 4px;
+    }
+
+    label {
+      display: block;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      margin-top: 4px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+      border: 1px solid #d0d7e2;
+      padding: 7px 10px;
+      font-size: 1em;
+      background: #f8fafd;
+    }
+
+    button {
+      margin-top: 8px;
+      padding: 10px 0;
+      width: 100%;
+      border: none;
+      border-radius: 6px;
+      font-size: 1.1em;
+      font-weight: bold;
+      background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(106, 17, 203, 0.08);
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%);
+    }
+
+    .result-box {
+      background: #f0f7ff;
+      color: #1a237e;
+      border-radius: 6px;
+      border: 1px solid #b3c6e6;
+      margin-top: 8px;
+      padding: 8px 10px;
+      font-size: 15px;
+      min-height: 22px;
+      font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+      word-break: break-all;
+    }
+
+    .tip {
+      background: #fffbe6;
+      color: #b8860b;
+      border-left: 5px solid #ffe066;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin: 18px auto 0 auto;
+      max-width: 520px;
+      font-size: 1em;
+      font-weight: 500;
+    }
+
+    @media (max-width: 600px) {
+
+      .section,
+      .tip,
+      .env-status {
+        max-width: 98vw;
+      }
+
+      .banner {
+        padding: 24px 4vw 14px 4vw;
+      }
+    }
+
+    .accordion {
+      border: 1px solid #b3c6e6;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      background: #f8fafd;
+    }
+
+    .accordion-header {
+      cursor: pointer;
+      padding: 10px 12px;
+      font-weight: bold;
+      color: #2575fc;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+
+    .accordion-arrow {
+      font-size: 1.1em;
+      transition: transform 0.2s;
+    }
+
+    .accordion-arrow.open {
+      transform: rotate(90deg);
+    }
+
+    .accordion-content {
+      display: none;
+      padding: 0 12px 12px 12px;
+    }
+
+    .accordion.open .accordion-content {
+      display: block;
+    }
+
+    .accordion-main {
+      border: 2px solid #b3c6e6;
+      border-radius: 14px;
+      margin: 28px auto 0 auto;
+      background: #fff;
+      max-width: 520px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      border-left: 6px solid #6a11cb;
+      position: relative;
+    }
+
+    .accordion-main-header {
+      cursor: pointer;
+      padding: 18px 18px 18px 24px;
+      font-size: 1.25em;
+      font-weight: bold;
+      color: #2575fc;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+      border-radius: 14px 14px 0 0;
+      background: #f4f6fa;
+    }
+
+    .accordion-main-arrow {
+      font-size: 1.2em;
+      transition: transform 0.2s;
+    }
+
+    .accordion-main-arrow.open {
+      transform: rotate(90deg);
+    }
+
+    .accordion-main-content {
+      display: none;
+      padding: 0 18px 18px 18px;
+    }
+
+    .accordion-main.open .accordion-main-content {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="banner">
+    <h1>🧪 WSD Bridge H5 </h1>
+    <p>一站式验证 <b>JSBridge</b> 与原生桥接能力，支持 eventTracker、openWebView、参数校验、回调等全流程。<br>请在 App WebView 中访问本页，所有结果实时高亮展示。</p>
+  </div>
+
+  <div id="pageTimestamp" class="env-status"
+    style="background:#fffbe6;color:#b8860b;border:1px solid #ffe066;margin-top:8px;">页面加载时间戳：<span
+      id="timestampValue"></span></div>
+
+  <div id="envStatus" class="env-status">环境检测中...</div>
+
+  <div class="section">
+    <h2><span class="icon">📊</span>1. eventTracker 测试</h2>
+    <label>eventName:</label>
+    <input id="eventTrackerName" value="test_event" />
+    <label>eventValue (JSON):</label>
+    <textarea id="eventTrackerValue">{"foo": "bar"}</textarea>
+    <button onclick="callEventTracker()">🚀 调用 eventTracker</button>
+    <div id="result-eventTracker" class="result-box"></div>
+    <button onclick="copyResult('result-eventTracker')"
+      style="margin-top:4px;background:#e6f7ff;color:#1890ff;">复制结果</button>
+
+    <hr style="margin:24px 0;">
+    <div style="font-size:1em;color:#2575fc;margin-bottom:8px;">【官方事件参数可编辑测试】</div>
+    <div id="eventTrackerOfficialTests"></div>
+  </div>
+
+  <div class="section">
+    <h2><span class="icon">🌐</span>2. openWebView 测试</h2>
+    <label>url:</label>
+    <input id="openWebViewUrl" value="https://flutter.dev" />
+    <label>type (1=外跳, 2=内嵌):</label>
+    <input id="openWebViewType" value="2" />
+    <button onclick="callOpenWebView(2, 'https://www.example.com')">测试内跳（type=2）</button>
+    <button onclick="callOpenWebView(1, 'https://www.example.com')">测试外跳（type=1）</button>
+    <div id="resultBox" style="margin-top:20px;"></div>
+    <button onclick="copyResult('resultBox')" style="margin-top:4px;background:#e6f7ff;color:#1890ff;">复制结果</button>
+  </div>
+
+  <div class="section">
+    <h2><span class="icon">🌍</span>3. openAndroid 测试</h2>
+    <label>url:</label>
+    <input id="openAndroidUrl" value="https://www.baidu.com" />
+    <button onclick="callOpenAndroid()">🔗 调用 openAndroid</button>
+    <div id="result-openAndroid" class="result-box"></div>
+    <button onclick="copyResult('result-openAndroid')"
+      style="margin-top:4px;background:#e6f7ff;color:#1890ff;">复制结果</button>
+  </div>
+
+  <div class="section">
+    <h2><span class="icon">❌</span>4. closeWebView 测试</h2>
+    <button onclick="callCloseWebView()">🛑 调用 closeWebView</button>
+    <div id="result-closeWebView" class="result-box"></div>
+    <button onclick="copyResult('result-closeWebView')"
+      style="margin-top:4px;background:#e6f7ff;color:#1890ff;">复制结果</button>
+    <div style="text-align:center;margin:16px 0;">
+      <button onclick="openChildTestPage()" style="width:auto;padding:8px 24px;font-size:1em;">打开二级测试页（新标签页）</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2><span class="icon">🧑‍💻</span>5. getUseragent 测试</h2>
+    <button onclick="callGetUseragent()">🔍 获取 useragent</button>
+    <div id="result-getUseragent" class="result-box"></div>
+    <button onclick="copyResult('result-getUseragent')"
+      style="margin-top:4px;background:#e6f7ff;color:#1890ff;">复制结果</button>
+  </div>
+
+  <div class="section">
+    <h2><span class="icon">🔑</span>6. googleLogin 测试</h2>
+    <button onclick="callGoogleLogin()">🔑 调用 googleLogin</button>
+    <div id="result-googleLogin" class="result-box"></div>
+    <button onclick="copyResult('result-googleLogin')"
+      style="margin-top:4px;background:#e6f7ff;color:#1890ff;">复制结果</button>
+  </div>
+
+  <div class="section">
+    <h2><span class="icon">🔵</span>7. facebookLogin 测试</h2>
+    <button onclick="callFacebookLogin()">🔵 调用 facebookLogin</button>
+    <div id="result-facebookLogin" class="result-box"></div>
+    <button onclick="copyResult('result-facebookLogin')"
+      style="margin-top:4px;background:#e6f7ff;color:#1890ff;">复制结果</button>
+  </div>
+
+  <div class="section">
+    <h2><span class="icon">📬</span>8. getFcmToken 测试</h2>
+    <button onclick="callGetFcmToken()">📬 调用 getFcmToken</button>
+    <div id="result-getFcmToken" class="result-box"></div>
+    <button onclick="copyResult('result-getFcmToken')"
+      style="margin-top:4px;background:#e6f7ff;color:#1890ff;">复制结果</button>
+  </div>
+
+  <div class="section">
+    <h2><span class="icon">⚠️</span>9. alert 测试</h2>
+    <label>message:</label>
+    <input id="alertMsg" value="Hello from H5!" />
+    <button onclick="callAlert()">⚠️ 调用 alert</button>
+    <div id="result-alert" class="result-box"></div>
+    <button onclick="copyResult('result-alert')" style="margin-top:4px;background:#e6f7ff;color:#1890ff;">复制结果</button>
+  </div>
+
+  <div class="section">
+    <h2><span class="icon">🌐</span>10. openWindow 测试</h2>
+    <label>url:</label>
+    <input id="openWindowUrl" value="https://www.baidu.com" />
+    <button onclick="callOpenWindow()">🌐 调用 openWindow</button>
+    <div id="result-openWindow" class="result-box"></div>
+    <button onclick="copyResult('result-openWindow')"
+      style="margin-top:4px;background:#e6f7ff;color:#1890ff;">复制结果</button>
+  </div>
+
+  <div class="section">
+    <h2><span class="icon">🔗</span>11. handleHtmlLink 测试</h2>
+    <label>url:</label>
+    <input id="handleHtmlLinkUrl" value="https://www.baidu.com" />
+    <button onclick="callHandleHtmlLink()">🔗 调用 handleHtmlLink</button>
+    <div id="result-handleHtmlLink" class="result-box"></div>
+    <button onclick="copyResult('result-handleHtmlLink')"
+      style="margin-top:4px;background:#e6f7ff;color:#1890ff;">复制结果</button>
+
+    <hr style="margin:24px 0;">
+    <div style="font-size:1em;color:#2575fc;margin-bottom:8px;">【高级场景模拟】a标签点击拦截 + handleHtmlLink</div>
+    <label>模拟业务场景：</label>
+    <select id="handleHtmlLinkScene">
+      <option value="white">白名单自动跳转</option>
+      <option value="black">黑名单拦截弹窗</option>
+      <option value="login">需登录弹窗</option>
+      <option value="app">App端已处理（H5不跳转）</option>
+      <option value="h5">App端未处理（H5自行跳转）</option>
+      <option value="other">其他/默认场景（H5自行跳转）</option>
+    </select>
+    <input id="handleHtmlLinkAUrl" value="https://www.example.com" style="margin-top:8px;" />
+    <a id="handleHtmlLinkATag" href="https://www.example.com"
+      style="display:inline-block;margin:8px 0 0 0;color:#2575fc;text-decoration:underline;">点击模拟 a 标签</a>
+    <div id="result-handleHtmlLinkA" class="result-box"></div>
+    <div style="color:#888;font-size:0.95em;margin-top:8px;">说明：点击上方 a 标签会拦截并调用 handleHtmlLink，App端可根据
+      url/场景返回不同结果，H5根据返回值决定是否跳转/弹窗。</div>
+  </div>
+
+
+  <!-- ========== 原生JS能力桥接测试 ========== -->
+  <div class="section">
+    <h2><span class="icon">🧩</span>12. 原生JS能力桥接测试</h2>
+    <label>window.alert 测试</label>
+    <input id="jsAlertMsg" value="Hello from window.alert!" />
+    <button onclick="testJsAlert()">🟣 调用 window.alert</button>
+    <div id="result-jsAlert" class="result-box"></div>
+
+    <label style="margin-top:16px;">window.confirm 测试</label>
+    <input id="jsConfirmMsg" value="Are you sure?" />
+    <button onclick="testJsConfirm()">🟢 调用 window.confirm</button>
+    <div id="result-jsConfirm" class="result-box"></div>
+
+    <label style="margin-top:16px;">window.prompt 测试</label>
+    <input id="jsPromptMsg" value="请输入内容" />
+    <input id="jsPromptDefault" value="默认值" />
+    <button onclick="testJsPrompt()">🟠 调用 window.prompt</button>
+    <div id="result-jsPrompt" class="result-box"></div>
+
+    <label style="margin-top:16px;">window.open 测试</label>
+    <input id="jsOpenUrl" value="https://flutter.dev" />
+    <button onclick="testJsOpen()">🔵 调用 window.open</button>
+    <div id="result-jsOpen" class="result-box"></div>
+
+    <label style="margin-top:16px;">a标签超链接测试</label>
+    <input id="jsALink" value="https://www.baidu.com" />
+    <a id="testALink" href="https://www.baidu.com" target="_blank"
+      style="display:inline-block;margin-top:8px;color:#2575fc;text-decoration:underline;">点击跳转 a 标签</a>
+    <div id="result-jsALink" class="result-box"></div>
+  </div>
+
+  <script>
+    console.log('H5 JS loaded at', new Date());
+
+    // 环境检测
+    function checkBridgeEnv() {
+      var envStatus = document.getElementById('envStatus');
+      if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') {
+        envStatus.textContent = '✅ 已检测到桥接环境，可正常调用';
+        envStatus.className = 'env-status env-ok';
+        return true;
+      } else {
+        envStatus.textContent = '❌ 未检测到桥接环境，请在App内WebView中打开';
+        envStatus.className = 'env-status env-fail';
+        return false;
+      }
+    }
+    checkBridgeEnv();
+
+    // eventTracker 测试
+    function callEventTracker() {
+      if (!checkBridgeEnv()) {
+        showResult('result-eventTracker', 'eventTracker', {}, '[未检测到桥接环境]');
+        return;
+      }
+      let eventName = document.getElementById('eventTrackerName').value;
+      let eventValue = safeParse(document.getElementById('eventTrackerValue').value);
+      if (!eventName || !eventValue) return;
+      window.flutter_inappwebview.callHandler('eventTracker', { eventName, eventValue })
+        .then(function (result) {
+          showResult('result-eventTracker', 'eventTracker', { eventName, eventValue }, result);
+        })
+        .catch(function (err) {
+          showResult('result-eventTracker', 'eventTracker', { eventName, eventValue }, '[异常] ' + err);
+        });
+    }
+
+    // openWebView 测试
+    function callOpenWebView(type, url) {
+      const params = { type, url };
+      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+        window.flutter_inappwebview.callHandler('openWebView', params).then(function (result) {
+          console.log('openWebView result:', result);
+          showResult('resultBox', 'openWebView', params, result);
+          if (!result) {
+            alert('插件返回结果为 null，请检查插件端 openWebView handler 的返回值！');
+            return;
+          }
+          if (result.code === 0 && result.data && result.data.type && result.data.url) {
+            if (result.data.type === 2) {
+              window.location.href = result.data.url;
+            } else if (result.data.type === 1) {
+              window.open(result.data.url, '_blank');
+            }
+          }
+        });
+      } else {
+        showResult('resultBox', 'openWebView', params, { code: -1, msg: '未检测到 flutter_inappwebview 环境', data: null });
+      }
+    }
+
+    // openAndroid 测试
+    function callOpenAndroid() {
+      if (!checkBridgeEnv()) {
+        showResult('result-openAndroid', 'openAndroid', {}, '[未检测到桥接环境]');
+        return;
+      }
+      let url = document.getElementById('openAndroidUrl').value;
+      window.flutter_inappwebview.callHandler('openAndroid', { url })
+        .then(function (result) {
+          showResult('result-openAndroid', 'openAndroid', { url }, result);
+        })
+        .catch(function (err) {
+          showResult('result-openAndroid', 'openAndroid', { url }, '[异常] ' + err);
+        });
+    }
+
+    // closeWebView 测试
+    function callCloseWebView() {
+      if (!checkBridgeEnv()) {
+        showResult('result-closeWebView', 'closeWebView', {}, '[未检测到桥接环境]');
+        return;
+      }
+      window.flutter_inappwebview.callHandler('closeWebView', {})
+        .then(function (result) {
+          showResult('result-closeWebView', 'closeWebView', {}, result);
+          // 仅在二级页面自动关闭
+          if (isChildPage() && result && result.code === 0 && result.data && result.data.closed === true) {
+            window.close();
+            // 兜底：关闭失败时返回上一页
+            setTimeout(function () {
+              if (!window.closed) {
+                window.history.back();
+              }
+            }, 300);
+          }
+        })
+        .catch(function (err) {
+          showResult('result-closeWebView', 'closeWebView', {}, '[异常] ' + err);
+        });
+    }
+
+    // getUseragent 测试
+    function callGetUseragent() {
+      if (!checkBridgeEnv()) {
+        showResult('result-getUseragent', 'getUseragent', {}, '[未检测到桥接环境]');
+        return;
+      }
+      window.flutter_inappwebview.callHandler('getUseragent', {})
+        .then(function (result) {
+          showResult('result-getUseragent', 'getUseragent', {}, result);
+        })
+        .catch(function (err) {
+          showResult('result-getUseragent', 'getUseragent', {}, '[异常] ' + err);
+        });
+    }
+
+    // googleLogin 测试
+    function callGoogleLogin() {
+      if (!checkBridgeEnv()) {
+        showResult('result-googleLogin', 'googleLogin', {}, '[未检测到桥接环境]');
+        return;
+      }
+      window.flutter_inappwebview.callHandler('googleLogin', {})
+        .then(function (result) {
+          showResult('result-googleLogin', 'googleLogin', {}, result);
+        })
+        .catch(function (err) {
+          showResult('result-googleLogin', 'googleLogin', {}, '[异常] ' + err);
+        });
+    }
+
+    // facebookLogin 测试
+    function callFacebookLogin() {
+      if (!checkBridgeEnv()) {
+        showResult('result-facebookLogin', 'facebookLogin', {}, '[未检测到桥接环境]');
+        return;
+      }
+      window.flutter_inappwebview.callHandler('facebookLogin', {})
+        .then(function (result) {
+          showResult('result-facebookLogin', 'facebookLogin', {}, result);
+        })
+        .catch(function (err) {
+          showResult('result-facebookLogin', 'facebookLogin', {}, '[异常] ' + err);
+        });
+    }
+
+    // getFcmToken 测试
+    function callGetFcmToken() {
+      if (!checkBridgeEnv()) {
+        showResult('result-getFcmToken', 'getFcmToken', {}, '[未检测到桥接环境]');
+        return;
+      }
+      window.flutter_inappwebview.callHandler('getFcmToken', {})
+        .then(function (result) {
+          showResult('result-getFcmToken', 'getFcmToken', {}, result);
+        })
+        .catch(function (err) {
+          showResult('result-getFcmToken', 'getFcmToken', {}, '[异常] ' + err);
+        });
+    }
+
+    // alert 测试
+    function callAlert() {
+      if (!checkBridgeEnv()) {
+        showResult('result-alert', 'alert', {}, '[未检测到桥接环境]');
+        return;
+      }
+      let message = document.getElementById('alertMsg').value;
+      window.flutter_inappwebview.callHandler('alert', { message })
+        .then(function (result) {
+          showResult('result-alert', 'alert', { message }, result);
+        })
+        .catch(function (err) {
+          showResult('result-alert', 'alert', { message }, '[异常] ' + err);
+        });
+    }
+
+    // openWindow 测试
+    function callOpenWindow() {
+      if (!checkBridgeEnv()) {
+        showResult('result-openWindow', 'openWindow', {}, '[未检测到桥接环境]');
+        return;
+      }
+      let url = document.getElementById('openWindowUrl').value;
+      window.flutter_inappwebview.callHandler('openWindow', { url })
+        .then(function (result) {
+          showResult('result-openWindow', 'openWindow', { url }, result);
+        })
+        .catch(function (err) {
+          showResult('result-openWindow', 'openWindow', { url }, '[异常] ' + err);
+        });
+    }
+
+    // handleHtmlLink 测试
+    function callHandleHtmlLink() {
+      if (!checkBridgeEnv()) {
+        showResult('result-handleHtmlLink', 'handleHtmlLink', {}, '[未检测到桥接环境]');
+        return;
+      }
+      let url = document.getElementById('handleHtmlLinkUrl').value;
+      window.flutter_inappwebview.callHandler('handleHtmlLink', { url })
+        .then(function (result) {
+          showResult('result-handleHtmlLink', 'handleHtmlLink', { url }, result);
+        })
+        .catch(function (err) {
+          showResult('result-handleHtmlLink', 'handleHtmlLink', { url }, '[异常] ' + err);
+        });
+    }
+
+    function showResult(boxId, method, params, result) {
+      let box = document.getElementById(boxId);
+      let msg = `[${new Date().toLocaleTimeString()}] 方法: ${method}\n参数: ${JSON.stringify(params)}\n原始结果: ${JSON.stringify(result)}`;
+      box.innerHTML = `<span style='color:#2575fc;'>${msg.replace(/\n/g, '<br>')}</span>`;
+    }
+
+    // JSON安全解析
+    function safeParse(str) {
+      try {
+        return JSON.parse(str);
+      } catch (e) {
+        alert('参数不是合法JSON');
+        return null;
+      }
+    }
+
+    function copyResult(boxId) {
+      var box = document.getElementById(boxId);
+      var text = box.innerText || box.textContent;
+      if (!text) return;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(function () {
+          alert('结果已复制到剪贴板');
+        });
+      } else {
+        // 兼容旧浏览器
+        var textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('结果已复制到剪贴板');
+      }
+    }
+
+    // 显示当前时间戳，便于判断页面是否被缓存
+    document.getElementById('timestampValue').textContent = Date.now();
+
+    // 打开二级测试页
+    let isOpeningChildPage = false; // 防重复点击
+    function openChildTestPage() {
+      if (isOpeningChildPage) {
+        console.log('正在打开二级测试页，请勿重复点击');
+        return;
+      }
+
+      isOpeningChildPage = true;
+      const childUrl = window.location.href.split('?')[0] + '?scene=child';
+
+      // 优先使用 openWebView 内嵌跳转（type=2）
+      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+        console.log('使用桥接方式打开二级测试页:', childUrl);
+        window.flutter_inappwebview.callHandler('openWebView', {
+          type: 2,
+          url: childUrl
+        }).then(function (result) {
+          console.log('打开二级测试页 openWebView result:', result);
+          // 检查桥接调用是否成功
+          if (result && result.code === 0 && result.data && result.data.opened) {
+            console.log('桥接跳转成功，页面将在当前WebView中加载');
+            // 成功时不需要额外操作，WebView会自动加载新页面
+          } else {
+            // 如果桥接失败，回退到 window.open
+            console.warn('桥接跳转失败，回退到 window.open。result:', result);
+            window.open(childUrl, '_blank');
+          }
+          // 延迟重置防重复标志
+          setTimeout(() => { isOpeningChildPage = false; }, 1000);
+        }).catch(function (err) {
+          console.error('桥接跳转异常，回退到 window.open:', err);
+          window.open(childUrl, '_blank');
+          setTimeout(() => { isOpeningChildPage = false; }, 1000);
+        });
+      } else {
+        // 未检测到桥接环境，直接使用 window.open
+        console.log('未检测到桥接环境，使用 window.open');
+        window.open(childUrl, '_blank');
+        setTimeout(() => { isOpeningChildPage = false; }, 1000);
+      }
+    }
+
+    // 判断是否为二级测试页
+    function isChildPage() {
+      return /[?&]scene=child/.test(window.location.search);
+    }
+
+    function testJsAlert() {
+      let msg = document.getElementById('jsAlertMsg').value;
+      let t0 = Date.now();
+      alert(msg);
+      let t1 = Date.now();
+      document.getElementById('result-jsAlert').innerHTML =
+        `<span style='color:#2575fc;'>alert弹窗已调用，耗时${t1 - t0}ms</span>`;
+    }
+
+    function testJsConfirm() {
+      let msg = document.getElementById('jsConfirmMsg').value;
+      let t0 = Date.now();
+      let result = confirm(msg);
+      let t1 = Date.now();
+      document.getElementById('result-jsConfirm').innerHTML =
+        `<span style='color:#2575fc;'>confirm弹窗结果: <b>${result}</b>，耗时${t1 - t0}ms</span>`;
+    }
+
+    function testJsPrompt() {
+      let msg = document.getElementById('jsPromptMsg').value;
+      let def = document.getElementById('jsPromptDefault').value;
+      let t0 = Date.now();
+      let result = prompt(msg, def);
+      let t1 = Date.now();
+      document.getElementById('result-jsPrompt').innerHTML =
+        `<span style='color:#2575fc;'>prompt弹窗结果: <b>${result}</b>，耗时${t1 - t0}ms</span>`;
+    }
+
+    function testJsOpen() {
+      let url = document.getElementById('jsOpenUrl').value;
+      let t0 = Date.now();
+      window.open(url, '_blank');
+      let t1 = Date.now();
+      document.getElementById('result-jsOpen').innerHTML =
+        `<span style='color:#2575fc;'>window.open已调用，耗时${t1 - t0}ms</span>`;
+    }
+
+    // 动态绑定a标签href
+    document.getElementById('jsALink').addEventListener('input', function () {
+      document.getElementById('testALink').href = this.value;
+    });
+    document.getElementById('testALink').addEventListener('click', function () {
+      document.getElementById('result-jsALink').innerHTML =
+        `<span style='color:#2575fc;'>a标签已点击，目标: ${this.href}</span>`;
+    });
+
+    // handleHtmlLink 场景模拟 - 确保在DOM加载完成后绑定事件
+    function initializeHandleHtmlLinkEvents() {
+      console.log('🔧 初始化 handleHtmlLink 事件绑定...');
+
+      // URL输入框同步到a标签href
+      var urlInput = document.getElementById('handleHtmlLinkAUrl');
+      var aTag = document.getElementById('handleHtmlLinkATag');
+
+      if (urlInput && aTag) {
+        // 防止重复绑定：先移除可能存在的事件监听器
+        urlInput.removeEventListener('input', urlInputHandler);
+        aTag.removeEventListener('click', aTagClickHandler);
+
+        // 重新绑定事件
+        urlInput.addEventListener('input', urlInputHandler);
+        aTag.addEventListener('click', aTagClickHandler);
+
+        console.log('✅ handleHtmlLink 事件绑定完成');
+      } else {
+        console.error('❌ 找不到必要的DOM元素:', { urlInput, aTag });
+      }
+    }
+
+    // URL输入处理函数
+    function urlInputHandler() {
+      var aTag = document.getElementById('handleHtmlLinkATag');
+      if (aTag) {
+        aTag.href = this.value;
+        console.log('🔗 URL已更新:', this.value);
+      }
+    }
+
+    // a标签点击处理函数
+    function aTagClickHandler(e) {
+      console.log('🖱️ a标签被点击，开始拦截处理...');
+      e.preventDefault(); // 阻止默认跳转
+      e.stopPropagation(); // 阻止事件冒泡
+
+      var url = this.href;
+      var scene = document.getElementById('handleHtmlLinkScene').value;
+
+      console.log('📋 当前场景:', scene);
+      console.log('🌐 目标URL:', url);
+
+      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+        console.log('🚀 调用 handleHtmlLink JSBridge...');
+        window.flutter_inappwebview.callHandler('handleHtmlLink', { url, scene })
+          .then(function (result) {
+            console.log('✅ handleHtmlLink 调用成功:');
+            console.log('- 场景:', scene);
+            console.log('- URL:', url);
+            console.log('- 原始返回结果:', result);
+            console.log('- result.data:', result?.data);
+            console.log('- result.data.handled:', result?.data?.handled);
+            console.log('- result.data.handled类型:', typeof (result?.data?.handled));
+
+            let msg = `[${new Date().toLocaleTimeString()}] handleHtmlLink 场景: ${scene}\nurl: ${url}\nApp端返回: ${JSON.stringify(result)}\n`;
+
+            // 详细的调试信息
+            let debugInfo = '';
+            if (result && result.data) {
+              debugInfo += `\n🔍 调试信息:\n`;
+              debugInfo += `- result.data.handled 值: ${result.data.handled}\n`;
+              debugInfo += `- result.data.handled 类型: ${typeof (result.data.handled)}\n`;
+              debugInfo += `- == false: ${result.data.handled == false}\n`;
+              debugInfo += `- == 'login': ${result.data.handled == 'login'}\n`;
+              debugInfo += `- == 'black': ${result.data.handled == 'black'}\n`;
+              debugInfo += `- == true: ${result.data.handled == true}\n`;
+            }
+
+            document.getElementById('result-handleHtmlLinkA').innerHTML = `<span style='color:#2575fc;'>${(msg + debugInfo).replace(/\n/g, '<br>')}</span>`;
+
+            // H5根据App端返回决定后续动作（兼容各种类型）
+            if (result && result.data) {
+              const handledValue = result.data.handled;
+              if (handledValue === false || handledValue === 'false' || handledValue === 0 || handledValue === '0') {
+                // H5自行跳转，直接跳转无需弹窗
+                console.log('🔄 执行 H5 自行跳转（无弹窗）');
+                window.location.href = url;
+              } else if (handledValue === 'login') {
+                // 只弹窗，不跳转
+                console.log('🔐 显示登录提示');
+                if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+                  window.flutter_inappwebview.callHandler('alert', { message: '请先登录后再访问该链接！' });
+                } else {
+                  alert('请先登录后再访问该链接！');
+                }
+                // 不跳转
+              } else if (handledValue === 'black') {
+                // 只弹窗，不跳转
+                console.log('🚫 显示拦截提示');
+                if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+                  window.flutter_inappwebview.callHandler('alert', { message: '该链接已被拦截，禁止访问！' });
+                } else {
+                  alert('该链接已被拦截，禁止访问！');
+                }
+                // 不跳转
+              } else if (handledValue === true || handledValue === 'true' || handledValue === 1 || handledValue === '1') {
+                // 只弹窗，不跳转
+                console.log('✅ App端已处理');
+                if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+                  window.flutter_inappwebview.callHandler('alert', { message: `场景 "${scene}" - App端已处理，H5无需操作` });
+                } else {
+                  alert(`场景 "${scene}" - App端已处理，H5无需操作`);
+                }
+                // 不跳转
+              } else {
+                // 只弹窗，不跳转
+                console.log('❓ 未知的 handled 值:', handledValue);
+                if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+                  window.flutter_inappwebview.callHandler('alert', { message: `未知的 handled 值: ${handledValue}，类型: ${typeof (handledValue)}` });
+                } else {
+                  alert(`未知的 handled 值: ${handledValue}，类型: ${typeof (handledValue)}`);
+                }
+                // 不跳转
+              }
+            } else {
+              console.log('❌ 返回结果结构异常');
+              alert('返回结果结构异常，无法处理');
+            }
+          })
+          .catch(function (error) {
+            console.error('❌ handleHtmlLink 调用失败:', error);
+            document.getElementById('result-handleHtmlLinkA').innerHTML = `<span style='color:red;'>调用失败: ${error}</span>`;
+          });
+      } else {
+        console.warn('❌ 未检测到桥接环境');
+        alert('未检测到桥接环境，无法调用 handleHtmlLink');
+      }
+    }
+
+    // 立即执行事件绑定（确保DOM已加载）
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeHandleHtmlLinkEvents);
+    } else {
+      initializeHandleHtmlLinkEvents();
+    }
+
+    // 官方事件标准参数
+    const eventParams = {
+      firstOpen: {},
+      registerSubmit: { method: 'username' },
+      register: {
+        method: 'username',
+        customerId: 12345,
+        customerName: '张三',
+        mobileNum: '13800138000'
+      },
+      depositSubmit: {
+        customerName: '张三',
+        customerId: 12345,
+        revenue: '100',
+        value: '100',
+        af_revenue: 100
+      },
+      firstDeposit: {
+        customerName: '张三',
+        customerId: 12345,
+        revenue: '100',
+        value: '100',
+        af_revenue: 100
+      },
+      withdraw: {
+        customerName: '张三',
+        customerId: 12345,
+        amount: '-50',
+        value: '-50',
+        af_revenue: -50
+      },
+      firstDepositArrival: {
+        customerName: '张三',
+        customerId: 12345,
+        revenue: '100',
+        value: '100',
+        af_revenue: 100
+      },
+      deposit: {
+        customerName: '张三',
+        customerId: 12345,
+        revenue: '100',
+        value: '100',
+        af_revenue: 100
+      }
+    };
+
+    // 12个事件名（如需扩展可在此补充）
+    const officialEvents = [
+      'firstOpen',
+      'registerSubmit',
+      'register',
+      'depositSubmit',
+      'firstDeposit',
+      'withdraw',
+      'firstDepositArrival',
+      'deposit',
+      'openWebView',
+      'openAndroid',
+      'closeWebView',
+      'getUseragent'
+    ];
+    const container = document.getElementById('eventTrackerOfficialTests');
+    officialEvents.forEach(eventName => {
+      const paramStr = JSON.stringify(eventParams[eventName] || {}, null, 2);
+      const html = `
+        <div class="accordion" id="accordion-${eventName}">
+          <div class="accordion-header" onclick="toggleAccordion('${eventName}')">
+            <span>${eventName}</span>
+            <span class="accordion-arrow" id="arrow-${eventName}">▶</span>
+          </div>
+          <div class="accordion-content">
+            <div style="margin-top:6px;">
+              <label style="font-weight:500;">eventValue (JSON):</label>
+              <textarea id="officialEventValue_${eventName}" style="width:100%;min-height:48px;">${paramStr}</textarea>
+            </div>
+            <div style="margin-top:6px;display:flex;gap:8px;">
+              <button onclick="resetOfficialEventValue('${eventName}')" style="background:#e6f7ff;color:#1890ff;">重置为标准参数</button>
+              <button onclick="testOfficialEventEditable('${eventName}')">测试</button>
+            </div>
+            <div id="result-officialEvent-${eventName}" class="result-box" style="margin-top:6px;"></div>
+          </div>
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', html);
+    });
+
+    function toggleAccordion(eventName) {
+      const acc = document.getElementById('accordion-' + eventName);
+      const arrow = document.getElementById('arrow-' + eventName);
+      if (acc.classList.contains('open')) {
+        acc.classList.remove('open');
+        arrow.classList.remove('open');
+      } else {
+        acc.classList.add('open');
+        arrow.classList.add('open');
+      }
+    }
+    function resetOfficialEventValue(eventName) {
+      document.getElementById('officialEventValue_' + eventName).value = JSON.stringify(eventParams[eventName] || {}, null, 2);
+    }
+    function testOfficialEventEditable(eventName) {
+      if (!checkBridgeEnv()) {
+        showResult('result-officialEvent-' + eventName, 'eventTracker', {}, '[未检测到桥接环境]');
+        return;
+      }
+      let eventValueStr = document.getElementById('officialEventValue_' + eventName).value;
+      let eventValue = safeParse(eventValueStr);
+      if (eventValue === null) return;
+      window.flutter_inappwebview.callHandler('eventTracker', { eventName, eventValue })
+        .then(function (result) {
+          showResult('result-officialEvent-' + eventName, 'eventTracker', { eventName, eventValue }, result);
+        })
+        .catch(function (err) {
+          showResult('result-officialEvent-' + eventName, 'eventTracker', { eventName, eventValue }, '[异常] ' + err);
+        });
+    }
+
+    // 渲染所有一级功能区为折叠面板
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('🔄 开始转换为折叠面板...');
+
+      const sectionTitles = [
+        '1. eventTracker 测试',
+        '2. openWebView 测试',
+        '3. openAndroid 测试',
+        '4. closeWebView 测试',
+        '5. getUseragent 测试',
+        '6. googleLogin 测试',
+        '7. facebookLogin 测试',
+        '8. getFcmToken 测试',
+        '9. alert 测试',
+        '10. openWindow 测试',
+        '11. handleHtmlLink 测试',
+        '12. 原生JS能力桥接测试'
+      ];
+      const allSections = Array.from(document.querySelectorAll('.section'));
+      allSections.forEach((section, idx) => {
+        const title = sectionTitles[idx] || `功能区${idx + 1}`;
+        const content = section.innerHTML;
+        const html = `
+          <div class="accordion-main" id="main-accordion-${idx}">
+            <div class="accordion-main-header" onclick="toggleMainAccordion(${idx})">
+              <span>${title}</span>
+              <span class="accordion-main-arrow" id="main-arrow-${idx}">▶</span>
+            </div>
+            <div class="accordion-main-content">
+              ${content}
+            </div>
+          </div>
+        `;
+        section.outerHTML = html;
+      });
+
+      console.log('✅ 折叠面板转换完成');
+
+      // 关键修复：DOM重建后重新绑定 handleHtmlLink 事件
+      console.log('🔧 DOM重建后重新绑定 handleHtmlLink 事件...');
+
+      // 延迟一下确保DOM更新完成
+      setTimeout(function () {
+        initializeHandleHtmlLinkEvents();
+        console.log('🔄 handleHtmlLink 事件重新绑定完成');
+      }, 100);
+    });
+    function toggleMainAccordion(idx) {
+      const acc = document.getElementById('main-accordion-' + idx);
+      const arrow = document.getElementById('main-arrow-' + idx);
+      if (acc.classList.contains('open')) {
+        acc.classList.remove('open');
+        arrow.classList.remove('open');
+      } else {
+        acc.classList.add('open');
+        arrow.classList.add('open');
+      }
+    }
+  </script>
+</body>
+
+</html>
