@@ -263,6 +263,47 @@
     <hr style="margin:24px 0;">
     <div style="font-size:1em;color:#2575fc;margin-bottom:8px;">【官方事件参数可编辑测试】</div>
     <div id="eventTrackerOfficialTests"></div>
+
+    <!-- 添加专门的 firstOpen 沙盒测试区域 -->
+    <hr style="margin:24px 0;">
+    <div style="font-size:1em;color:#2575fc;margin-bottom:8px;">【🧪 沙盒环境 firstOpen 专项测试】</div>
+    <div style="background:#fff8e6;border:1px solid #ffe066;border-radius:6px;padding:12px;margin-bottom:12px;">
+      <strong>📋 沙盒测试说明：</strong>
+      <ul style="margin:8px 0;padding-left:20px;font-size:0.95em;">
+        <li><strong>当前环境：SANDBOX (沙盒)</strong></li>
+        <li>App Token: y0mht8z9n1fk</li>
+        <li>Event Token: q6mgkw (firstOpen 专用)</li>
+        <li><strong style="color:#d46b08;">⚠️ 重要：沙盒数据不在主控制台显示</strong></li>
+        <li><strong>正确查看位置：Adjust后台 → 【测试】→ 【设备日志】</strong></li>
+        <li>成功标志：控制台显示 "🎉 [Adjust] 事件上报成功！"</li>
+        <li>数据延迟：沙盒环境可能有 2-10 分钟延迟</li>
+      </ul>
+    </div>
+    <div style="background:#e6ffed;border:1px solid #b7eb8f;border-radius:6px;padding:12px;margin-bottom:12px;">
+      <strong style="color:#237804;">🔍 调试步骤：</strong>
+      <ol style="margin:8px 0;padding-left:20px;font-size:0.95em;color:#237804;">
+        <li>点击 "🚀 测试 firstOpen" 按钮</li>
+        <li>检查页面显示 "✅ 桥接调用成功"</li>
+        <li>等待控制台显示 Adjust 服务器回调</li>
+        <li>如果 5 分钟内无回调，点击 "🔍 环境检查"</li>
+        <li>最终在 Adjust 后台【测试】→【设备日志】查看数据</li>
+      </ol>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+      <button onclick="testFirstOpenSandbox()" style="background:#52c41a;color:#fff;flex:1;min-width:200px;">🚀 测试
+        firstOpen (沙盒专用)</button>
+      <button onclick="checkNetworkAndAdjustStatus()" style="background:#1890ff;color:#fff;flex:1;min-width:150px;">🔍
+        环境检查</button>
+      <button onclick="startAdjustCallbackMonitoring()" style="background:#722ed1;color:#fff;flex:1;min-width:150px;">📡
+        监听回调</button>
+    </div>
+    <div id="result-firstOpen-sandbox" class="result-box"></div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button onclick="copyResult('result-firstOpen-sandbox')"
+        style="background:#e6f7ff;color:#1890ff;flex:1;">复制结果</button>
+      <button onclick="clearSandboxResult()" style="background:#f6f8fa;color:#666;flex:1;">清除结果</button>
+      <button onclick="openAdjustDebugTool()" style="background:#fa8c16;color:#fff;flex:1;">🛠️ 调试工具</button>
+    </div>
   </div>
 
   <div class="section">
@@ -884,9 +925,13 @@
 
     // 立即执行事件绑定（确保DOM已加载）
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeHandleHtmlLinkEvents);
+      document.addEventListener('DOMContentLoaded', function () {
+        initializeHandleHtmlLinkEvents();
+        autoStartDiagnostics(); // 自动启动诊断
+      });
     } else {
       initializeHandleHtmlLinkEvents();
+      autoStartDiagnostics(); // 自动启动诊断
     }
 
     // 官方事件标准参数
@@ -1064,6 +1109,270 @@
         acc.classList.add('open');
         arrow.classList.add('open');
       }
+    }
+
+    // firstOpen 沙盒测试
+    function testFirstOpenSandbox() {
+      if (!checkBridgeEnv()) {
+        showResult('result-firstOpen-sandbox', 'eventTracker', {}, '[未检测到桥接环境]');
+        return;
+      }
+
+      console.log('🚀 开始测试 firstOpen 事件 (沙盒环境)');
+      console.log('📋 配置信息: Event Token = q6mgkw, 环境 = SANDBOX');
+
+      // 增强的调试信息显示
+      const resultBox = document.getElementById('result-firstOpen-sandbox');
+      resultBox.innerHTML = `
+        <div style="color:#1890ff;font-weight:bold;">⏳ 正在发送 firstOpen 事件...</div>
+        <div style="color:#666;font-size:0.9em;margin-top:4px;">
+          📋 App Token: y0mht8z9n1fk<br>
+          🎯 Event Token: q6mgkw<br>
+          🌍 环境: SANDBOX (沙盒)<br>
+          ⏰ 发送时间: ${new Date().toLocaleString()}
+        </div>
+      `;
+
+      window.flutter_inappwebview.callHandler('eventTracker', {
+        eventName: 'firstOpen',
+        eventValue: {}
+      }).then(function (result) {
+        console.log('✅ eventTracker 桥接调用成功，返回结果:', result);
+
+        // 详细的结果显示
+        let resultHtml = `
+          <div style="color:#52c41a;font-weight:bold;">✅ 桥接调用成功</div>
+          <div style="color:#666;font-size:0.9em;margin:8px 0;">
+            📤 发送时间: ${new Date().toLocaleString()}<br>
+            📋 事件名称: firstOpen<br>
+            🎯 Event Token: q6mgkw<br>
+            📊 本地处理结果: ${JSON.stringify(result)}
+          </div>
+        `;
+
+        if (result && result.code === 0) {
+          resultHtml += `
+            <div style="background:#e6ffed;border:1px solid #b7eb8f;border-radius:6px;padding:10px;margin:8px 0;">
+              <div style="color:#237804;font-weight:bold;">🎉 本地处理成功！</div>
+              <div style="color:#52c41a;font-size:0.9em;margin-top:4px;">
+                ✅ 事件已发送到 Adjust SDK<br>
+                ⏳ 正在等待服务器回调...
+              </div>
+            </div>
+            <div style="background:#fff8e6;border:1px solid #ffe066;border-radius:6px;padding:10px;margin:8px 0;">
+              <div style="color:#b8860b;font-weight:bold;">📊 数据查看指南：</div>
+              <div style="color:#b8860b;font-size:0.9em;margin-top:4px;">
+                1. <strong>沙盒环境数据不会显示在主控制台</strong><br>
+                2. 请在 Adjust 后台查看: <strong>【测试】→ 【设备日志】</strong><br>
+                3. 等待 2-5 分钟查看服务器回调<br>
+                4. 如果控制台显示 "🎉 [Adjust] 事件上报成功！" 说明服务器已收到
+              </div>
+            </div>
+            <div style="background:#f0f7ff;border:1px solid #b3c6e6;border-radius:6px;padding:10px;margin:8px 0;">
+              <div style="color:#1890ff;font-weight:bold;">🔍 调试提示：</div>
+              <div style="color:#1890ff;font-size:0.9em;margin-top:4px;">
+                • 如果 5 分钟内无服务器回调，可能存在网络问题<br>
+                • 沙盒环境延迟可能较高，请耐心等待<br>
+                • 可以在 App 的调试工具中查看更详细信息
+              </div>
+            </div>
+          `;
+
+          console.log('🎉 firstOpen 事件处理成功！请查看控制台是否有 Adjust 回调日志');
+        } else {
+          resultHtml += `
+            <div style="background:#fff1f0;border:1px solid #ffa39e;border-radius:6px;padding:10px;margin:8px 0;">
+              <div style="color:#cf1322;font-weight:bold;">❌ 本地处理失败</div>
+              <div style="color:#cf1322;font-size:0.9em;margin-top:4px;">
+                请检查事件配置和网络连接
+              </div>
+            </div>
+          `;
+          console.error('❌ firstOpen 事件处理失败:', result);
+        }
+
+        resultBox.innerHTML = resultHtml;
+      }).catch(function (err) {
+        console.error('❌ eventTracker 桥接调用异常:', err);
+
+        const errorHtml = `
+          <div style="color:#cf1322;font-weight:bold;">❌ 桥接调用失败</div>
+          <div style="color:#cf1322;font-size:0.9em;margin:8px 0;">
+            错误信息: ${err}<br>
+            请检查桥接环境和网络连接
+          </div>
+        `;
+
+        document.getElementById('result-firstOpen-sandbox').innerHTML = errorHtml;
+      });
+    }
+
+    // 添加 Adjust 回调状态监听
+    function startAdjustCallbackMonitoring() {
+      console.log('🔍 开始监听 Adjust 服务器回调...');
+
+      // 创建一个全局变量来跟踪回调
+      window.adjustCallbackReceived = false;
+      window.adjustCallbackDetails = null;
+
+      // 定时检查回调状态
+      const checkInterval = setInterval(() => {
+        if (window.adjustCallbackReceived) {
+          console.log('✅ 检测到 Adjust 服务器回调！', window.adjustCallbackDetails);
+          clearInterval(checkInterval);
+
+          // 更新页面显示
+          const resultBox = document.getElementById('result-firstOpen-sandbox');
+          if (resultBox) {
+            const callbackHtml = `
+              <div style="background:#e6ffed;border:2px solid #52c41a;border-radius:6px;padding:12px;margin:8px 0;">
+                <div style="color:#237804;font-weight:bold;">🎉 收到 Adjust 服务器回调！</div>
+                <div style="color:#52c41a;font-size:0.9em;margin-top:4px;">
+                  ⏰ 回调时间: ${new Date().toLocaleString()}<br>
+                  📊 回调详情: ${JSON.stringify(window.adjustCallbackDetails)}
+                </div>
+              </div>
+            `;
+            resultBox.innerHTML += callbackHtml;
+          }
+        }
+      }, 1000);
+
+      // 10 分钟后停止监听
+      setTimeout(() => {
+        if (!window.adjustCallbackReceived) {
+          console.log('⚠️ 10 分钟内未收到 Adjust 服务器回调');
+          clearInterval(checkInterval);
+        }
+      }, 600000);
+    }
+
+    // 添加网络状态检查
+    function checkNetworkAndAdjustStatus() {
+      console.log('🌐 检查网络状态和 Adjust 连接...');
+
+      const statusHtml = `
+        <div style="background:#f0f7ff;border:1px solid #b3c6e6;border-radius:6px;padding:10px;margin:8px 0;">
+          <div style="color:#1890ff;font-weight:bold;">🔍 环境检查结果：</div>
+          <div style="color:#1890ff;font-size:0.9em;margin-top:4px;">
+            • 网络状态: ${navigator.onLine ? '✅ 在线' : '❌ 离线'}<br>
+            • User Agent: ${navigator.userAgent.substring(0, 100)}...<br>
+            • 当前时间: ${new Date().toLocaleString()}<br>
+            • 页面 URL: ${window.location.href}
+          </div>
+        </div>
+      `;
+
+      const resultBox = document.getElementById('result-firstOpen-sandbox');
+      if (resultBox) {
+        resultBox.innerHTML += statusHtml;
+      }
+    }
+
+    // 清除沙盒测试结果
+    function clearSandboxResult() {
+      const resultBox = document.getElementById('result-firstOpen-sandbox');
+      if (resultBox) {
+        resultBox.innerHTML = '<div style="color:#999;">结果已清除，可以重新测试</div>';
+      }
+      console.log('🧹 已清除沙盒测试结果');
+    }
+
+    // 打开 App 内调试工具
+    function openAdjustDebugTool() {
+      if (!checkBridgeEnv()) {
+        alert('未检测到桥接环境，无法打开调试工具');
+        return;
+      }
+
+      console.log('🛠️ 尝试打开 Adjust 调试工具...');
+
+      // 尝试通过桥接打开调试页面
+      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+        window.flutter_inappwebview.callHandler('openWebView', {
+          type: 2, // 内嵌模式
+          url: '/adjust-debug' // 调试工具路径
+        }).then(function (result) {
+          console.log('调试工具打开结果:', result);
+          if (result && result.code === 0) {
+            console.log('✅ 调试工具打开成功');
+          } else {
+            console.warn('⚠️ 调试工具打开失败，请手动在 App 中访问');
+            alert('调试工具打开失败，请在 App 中手动访问【我的】→【Adjust 调试工具】');
+          }
+        }).catch(function (err) {
+          console.error('调试工具打开异常:', err);
+          alert('请在 App 中手动访问【我的】→【Adjust 调试工具】');
+        });
+      }
+    }
+
+    // 自动启动监控和检查
+    function autoStartDiagnostics() {
+      console.log('🚀 自动启动诊断和监控...');
+
+      // 页面加载后自动开始监控
+      setTimeout(function () {
+        startAdjustCallbackMonitoring();
+      }, 1000);
+
+      // 显示当前状态
+      const envInfo = document.createElement('div');
+      envInfo.innerHTML = `
+         <div style="background:#f0f7ff;border:1px solid #b3c6e6;border-radius:8px;padding:12px;margin:16px auto;max-width:520px;">
+           <div style="color:#1890ff;font-weight:bold;text-align:center;">📊 Adjust 沙盒环境监控已启动</div>
+           <div style="color:#666;font-size:0.9em;text-align:center;margin-top:8px;">
+             自动监听服务器回调，如有异常会在控制台提示
+           </div>
+         </div>
+       `;
+
+      // 插入到页面标题下方
+      const banner = document.querySelector('.banner');
+      if (banner && banner.nextSibling) {
+        banner.parentNode.insertBefore(envInfo, banner.nextSibling);
+      }
+    }
+
+    // 增强的事件测试函数（可配置参数）
+    function testFirstOpenWithParams(customParams = {}) {
+      if (!checkBridgeEnv()) {
+        showResult('result-firstOpen-sandbox', 'eventTracker', {}, '[未检测到桥接环境]');
+        return;
+      }
+
+      const eventValue = { ...customParams };
+      const timestamp = new Date().toISOString();
+
+      console.log('🚀 开始测试 firstOpen 事件 (增强版)');
+      console.log('📋 事件参数:', eventValue);
+      console.log('⏰ 测试时间:', timestamp);
+
+      window.flutter_inappwebview.callHandler('eventTracker', {
+        eventName: 'firstOpen',
+        eventValue: eventValue
+      }).then(function (result) {
+        console.log('✅ 增强版 firstOpen 测试完成:', result);
+
+        const resultBox = document.getElementById('result-firstOpen-sandbox');
+        const enhancedResult = `
+           <div style="border:2px solid #52c41a;border-radius:8px;padding:12px;margin:8px 0;">
+             <div style="color:#237804;font-weight:bold;">🔬 增强版测试结果</div>
+             <div style="color:#666;font-size:0.9em;margin-top:4px;">
+               ⏰ 测试时间: ${timestamp}<br>
+               📋 事件参数: ${JSON.stringify(eventValue)}<br>
+               📊 返回结果: ${JSON.stringify(result)}<br>
+               🎯 Event Token: q6mgkw
+             </div>
+           </div>
+         `;
+
+        if (resultBox) {
+          resultBox.innerHTML += enhancedResult;
+        }
+      }).catch(function (err) {
+        console.error('❌ 增强版测试失败:', err);
+      });
     }
   </script>
 </body>
