@@ -332,7 +332,7 @@
       <span class="info-value" id="deviceAdid">获取中...</span>
     </div>
     <div class="info-row">
-      <span class="info-label">Adjust Token:</span>
+      <span class="info-label">Adjust AppToken:</span>
       <span class="info-value" id="currentAppToken">--</span>
     </div>
     <div class="info-row">
@@ -568,34 +568,11 @@
   <script>
     console.log('H5 JS loaded at', new Date());
 
-    // 全局配置
-    const APP_CONFIG = {
-      sandbox: {
-        appToken: 'y0mht8z9n1fk',
-        environment: 'SANDBOX',
-        displayName: '沙盒环境',
-        dataLocation: 'Adjust后台 → 【测试】→ 【设备日志】',
-        eventTokens: {
-          firstOpen: 'q6mgkw',
-          register: 'abc123',
-          deposit: 'def456'
-        }
-      },
-      production: {
-        appToken: 'your_prod_token_here',
-        environment: 'PRODUCTION',
-        displayName: '生产环境',
-        dataLocation: 'Adjust后台 → 主控制台',
-        eventTokens: {
-          firstOpen: 'prod_first_open_token',
-          register: 'prod_register_token',
-          deposit: 'prod_deposit_token'
-        }
-      }
-    };
+    // 全局配置 - 修改为动态从Flutter端获取
+    let APP_CONFIG = null; // 将从Flutter端动态获取
 
-    // 当前环境状态
-    let currentEnvironment = 'sandbox'; // 默认沙盒
+    // 当前环境状态 - 将从Flutter端动态获取
+    let currentEnvironment = null;
     let deviceInfo = {
       adid: null,
       environment: null,
@@ -620,15 +597,12 @@
       }
     }
 
-    // 初始化环境信息
+    // 初始化环境信息 - 支持动态配置
     function initializeEnvironmentInfo() {
       console.log('🔧 开始初始化环境信息...');
 
-      // 检测当前环境配置
+      // 从Flutter端动态获取配置
       detectCurrentEnvironment();
-
-      // 更新环境面板（有桥接环境）
-      updateEnvironmentPanel(true);
 
       // 获取设备信息
       fetchDeviceInfo();
@@ -637,7 +611,7 @@
       updateEnvironmentSpecificInfo();
     }
 
-    // 更新环境信息面板
+    // 更新环境信息面板 - 支持动态配置
     function updateEnvironmentPanel(bridgeAvailable) {
       const envStatusText = document.getElementById('envStatusText');
       const currentEnvElement = document.getElementById('currentEnvironment');
@@ -649,22 +623,25 @@
 
       if (bridgeAvailable) {
         envStatusText.innerHTML = '<span style="color:#52c41a;">✅ 桥接环境正常</span>';
+
+        // 从Flutter端动态获取配置
+        if (APP_CONFIG && APP_CONFIG.current) {
+          const config = APP_CONFIG.current;
+          const envClass = config.environment === 'SANDBOX' ? 'env-sandbox' : 'env-production';
+
+          currentEnvElement.innerHTML = `${config.displayName} <span class="env-indicator ${envClass}">${config.environment}</span>`;
+          currentAppToken.textContent = config.appToken;
+        } else {
+          currentEnvElement.innerHTML = '<span style="color:#fa8c16;">配置加载中...</span>';
+          currentAppToken.innerHTML = '<span style="color:#fa8c16;">获取中...</span>';
+        }
       } else {
         envStatusText.innerHTML = '<span style="color:#cf1322;">❌ 桥接环境不可用</span>';
         document.getElementById('deviceAdid').innerHTML = '<span style="color:#cf1322;">桥接环境不可用</span>';
-      }
 
-      // 无论是否有桥接环境，都显示当前环境配置信息
-      const config = APP_CONFIG[currentEnvironment];
-      const envClass = currentEnvironment === 'sandbox' ? 'env-sandbox' : 'env-production';
-
-      if (bridgeAvailable) {
-        currentEnvElement.innerHTML = `${config.displayName} <span class="env-indicator ${envClass}">${config.environment}</span>`;
-        currentAppToken.textContent = config.appToken;
-      } else {
-        // 没有桥接环境时，显示环境信息但标明不可用
-        currentEnvElement.innerHTML = `${config.displayName} <span class="env-indicator ${envClass}">${config.environment}</span> <span style="color:#cf1322;font-size:0.8em;">(仅浏览器模式)</span>`;
-        currentAppToken.innerHTML = `<span style="color:#cf1322;">${config.appToken}</span> <span style="color:#999;font-size:0.8em;">(无法连接)</span>`;
+        // 没有桥接环境时显示默认信息
+        currentEnvElement.innerHTML = '<span style="color:#cf1322;">浏览器模式</span> <span style="color:#999;font-size:0.8em;">(无法连接Flutter)</span>';
+        currentAppToken.innerHTML = '<span style="color:#cf1322;">无法获取</span> <span style="color:#999;font-size:0.8em;">(需要桥接环境)</span>';
       }
     }
 
@@ -685,12 +662,20 @@
       ]).then(function (results) {
         const [adidResult, deviceResult, userAgentResult] = results;
 
-        // 处理ADID
-        if (adidResult && adidResult.adid) {
+        // 处理ADID - 修复版
+        if (adidResult && adidResult.hasAdid && adidResult.adid && adidResult.adid.trim() !== '') {
+          // 成功获取到ADID
           deviceInfo.adid = adidResult.adid;
           document.getElementById('deviceAdid').innerHTML = `<span style="color:#52c41a;">${adidResult.adid}</span>`;
+          console.log('✅ 首次获取ADID成功:', adidResult.adid);
+        } else if (adidResult && adidResult.error) {
+          // 有具体错误信息
+          document.getElementById('deviceAdid').innerHTML = `<span style="color:#cf1322;">获取失败: ${adidResult.error}</span>`;
+          console.log('❌ 首次获取ADID失败:', adidResult.error);
         } else {
+          // ADID暂未获取到，延迟重试
           document.getElementById('deviceAdid').innerHTML = '<span style="color:#fa8c16;">获取中...</span>';
+          console.log('⚠️ ADID暂未获取到，2秒后重试...');
           // 延迟重试
           setTimeout(retryGetAdid, 2000);
         }
@@ -703,37 +688,96 @@
       });
     }
 
-    // 获取Adjust ADID
-    function getAdjustAdid() {
+    // 获取 Adjust 配置信息 - 从Flutter端动态获取
+    function getAdjustConfig() {
       return new Promise(function (resolve, reject) {
         if (!window.flutter_inappwebview) {
+          console.log('❌ 桥接环境不可用，无法获取Adjust配置');
           reject('No bridge');
           return;
         }
 
-        // 先尝试直接获取ADID
-        window.flutter_inappwebview.callHandler('getAdjustAdid', {})
+        console.log('🔧 正在从Flutter端获取Adjust配置...');
+        window.flutter_inappwebview.callHandler('getAdjustConfig', {})
           .then(function (result) {
-            console.log('📱 获取ADID成功:', result);
-            if (result && result.code === 0 && result.data && result.data.adid) {
+            console.log('📱 获取Adjust配置成功:', result);
+            if (result && result.code === 0 && result.data) {
               resolve(result.data);
             } else {
-              // 如果没有ADID，返回空但有其他环境信息
+              reject(result ? result.msg : '获取配置失败');
+            }
+          })
+          .catch(function (error) {
+            console.log('📱 获取Adjust配置失败:', error);
+            reject(error);
+          });
+      });
+    }
+
+    // 获取Adjust ADID - 修复版
+    function getAdjustAdid() {
+      return new Promise(function (resolve, reject) {
+        if (!window.flutter_inappwebview) {
+          console.log('❌ 桥接环境不可用，无法获取ADID');
+          reject('No bridge');
+          return;
+        }
+
+        console.log('🔍 开始调用 getAdjustAdid JSBridge...');
+
+        // 调用Flutter端的getAdjustAdid处理器
+        window.flutter_inappwebview.callHandler('getAdjustAdid', {})
+          .then(function (result) {
+            console.log('📱 getAdjustAdid JSBridge 返回结果:', result);
+
+            // 检查返回结果的结构
+            if (result && typeof result === 'object') {
+              if (result.code === 0 && result.data && result.data.adid && result.data.adid.trim() !== '') {
+                // 成功获取到ADID
+                console.log('✅ ADID获取成功:', result.data.adid);
+                resolve({
+                  adid: result.data.adid,
+                  hasAdid: true,
+                  source: result.data.source || 'adjust_sdk',
+                  timestamp: result.data.timestamp || Date.now()
+                });
+              } else if (result.code === 1) {
+                // ADID暂未获取到（正常情况，SDK初始化中）
+                console.log('⚠️ ADID暂未获取到，SDK可能正在初始化...');
+                resolve({
+                  adid: '',
+                  hasAdid: false,
+                  note: result.msg || 'ADID暂未获取到',
+                  timestamp: Date.now()
+                });
+              } else {
+                // 其他错误
+                console.log('❌ ADID获取失败:', result.msg || '未知错误');
+                resolve({
+                  adid: '',
+                  hasAdid: false,
+                  error: result.msg || '获取失败',
+                  timestamp: Date.now()
+                });
+              }
+            } else {
+              // 返回结果格式异常
+              console.log('❌ ADID返回结果格式异常:', result);
               resolve({
                 adid: '',
                 hasAdid: false,
-                environment: 'UNKNOWN',
+                error: 'JSBridge返回格式异常',
                 timestamp: Date.now()
               });
             }
           })
           .catch(function (error) {
-            console.log('📱 ADID获取失败，使用默认值:', error);
-            // 获取失败时返回默认值
+            console.error('❌ getAdjustAdid JSBridge调用失败:', error);
+            // JSBridge调用失败
             resolve({
               adid: '',
               hasAdid: false,
-              environment: 'UNKNOWN',
+              error: 'JSBridge调用失败: ' + error,
               timestamp: Date.now()
             });
           });
@@ -771,16 +815,28 @@
       });
     }
 
-    // 重试获取ADID
+    // 重试获取ADID - 修复版
     function retryGetAdid() {
       console.log('🔄 重试获取ADID...');
       getAdjustAdid()
         .then(function (result) {
-          if (result && result.adid) {
+          console.log('🔄 重试获取ADID结果:', result);
+
+          if (result && result.hasAdid && result.adid && result.adid.trim() !== '') {
+            // 成功获取到ADID
             deviceInfo.adid = result.adid;
             document.getElementById('deviceAdid').innerHTML = `<span style="color:#52c41a;">${result.adid}</span>`;
             console.log('✅ 重试获取ADID成功:', result.adid);
+          } else if (result && result.error) {
+            // 有具体错误信息
+            document.getElementById('deviceAdid').innerHTML = `<span style="color:#cf1322;">获取失败: ${result.error}</span>`;
+            console.log('❌ 重试获取ADID失败:', result.error);
+          } else if (result && result.note) {
+            // ADID暂未获取到但有说明
+            document.getElementById('deviceAdid').innerHTML = `<span style="color:#fa8c16;">暂无ADID (${result.note})</span>`;
+            console.log('⚠️ 重试后仍无ADID:', result.note);
           } else {
+            // 默认情况
             document.getElementById('deviceAdid').innerHTML = '<span style="color:#fa8c16;">暂无ADID</span>';
             console.log('⚠️ 重试后仍无ADID');
           }
@@ -791,25 +847,64 @@
         });
     }
 
-    // 检测当前环境
+    // 检测当前环境 - 从Flutter端动态获取
     function detectCurrentEnvironment() {
-      // 这里可以通过多种方式检测环境
-      // 1. 检查URL参数
-      // 2. 检查UserAgent
-      // 3. 调用原生方法获取
+      // 从Flutter端动态获取配置
+      if (window.flutter_inappwebview) {
+        getAdjustConfig()
+          .then(function (config) {
+            // 构建配置对象
+            APP_CONFIG = {
+              current: {
+                appToken: config.appToken,
+                environment: config.environment,
+                displayName: config.environmentDisplay,
+                dataLocation: config.dataLocation,
+                eventTokens: config.eventTokens
+              }
+            };
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const envParam = urlParams.get('env');
+            // 设置当前环境
+            currentEnvironment = 'current';
+            console.log('✅ 动态配置加载成功:', APP_CONFIG);
 
-      if (envParam === 'production' || envParam === 'prod') {
-        currentEnvironment = 'production';
+            // 更新环境面板（有桥接环境）
+            updateEnvironmentPanel(true);
+          })
+          .catch(function (error) {
+            console.error('❌ 无法获取Flutter配置，使用默认配置:', error);
+            // 使用默认配置作为后备
+            APP_CONFIG = {
+              current: {
+                appToken: '无法获取',
+                environment: 'UNKNOWN',
+                displayName: '配置获取失败',
+                dataLocation: '无法连接',
+                eventTokens: {}
+              }
+            };
+            currentEnvironment = 'current';
+
+            // 更新环境面板
+            updateEnvironmentPanel(true);
+          });
       } else {
-        // 默认沙盒环境，适合开发和测试
-        currentEnvironment = 'sandbox';
-      }
+        console.log('❌ 没有桥接环境，无法获取Flutter配置');
+        // 浏览器模式的默认配置
+        APP_CONFIG = {
+          current: {
+            appToken: '无桥接环境',
+            environment: 'BROWSER',
+            displayName: '浏览器模式',
+            dataLocation: '仅浏览器测试',
+            eventTokens: {}
+          }
+        };
+        currentEnvironment = 'current';
 
-      console.log('🌍 当前检测环境:', currentEnvironment);
-      // 移除这里的 updateEnvironmentPanel 调用，由调用者决定
+        // 更新环境面板（无桥接环境）
+        updateEnvironmentPanel(false);
+      }
     }
 
     // 刷新环境信息
@@ -1266,45 +1361,24 @@
                 console.log('🔄 执行 H5 自行跳转（无弹窗）');
                 window.location.href = url;
               } else if (handledValue === 'login') {
-                // 只弹窗，不跳转
-                console.log('🔐 显示登录提示');
-                if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
-                  window.flutter_inappwebview.callHandler('alert', { message: '请先登录后再访问该链接！' });
-                } else {
-                  alert('请先登录后再访问该链接！');
-                }
+                // 显示登录提示，不跳转
+                console.log('🔐 显示登录提示: 请先登录后再访问该链接！');
                 // 不跳转
               } else if (handledValue === 'black') {
-                // 只弹窗，不跳转
-                console.log('🚫 显示拦截提示');
-                if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
-                  window.flutter_inappwebview.callHandler('alert', { message: '该链接已被拦截，禁止访问！' });
-                } else {
-                  alert('该链接已被拦截，禁止访问！');
-                }
+                // 显示拦截提示，不跳转
+                console.log('🚫 显示拦截提示: 该链接已被拦截，禁止访问！');
                 // 不跳转
               } else if (handledValue === true || handledValue === 'true' || handledValue === 1 || handledValue === '1') {
-                // 只弹窗，不跳转
-                console.log('✅ App端已处理');
-                if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
-                  window.flutter_inappwebview.callHandler('alert', { message: `场景 "${scene}" - App端已处理，H5无需操作` });
-                } else {
-                  alert(`场景 "${scene}" - App端已处理，H5无需操作`);
-                }
+                // App端已处理，不跳转
+                console.log(`✅ App端已处理: 场景 "${scene}" - App端已处理，H5无需操作`);
                 // 不跳转
               } else {
-                // 只弹窗，不跳转
-                console.log('❓ 未知的 handled 值:', handledValue);
-                if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
-                  window.flutter_inappwebview.callHandler('alert', { message: `未知的 handled 值: ${handledValue}，类型: ${typeof (handledValue)}` });
-                } else {
-                  alert(`未知的 handled 值: ${handledValue}，类型: ${typeof (handledValue)}`);
-                }
+                // 未知的handled值，不跳转
+                console.log(`❓ 未知的 handled 值: ${handledValue}，类型: ${typeof (handledValue)}`);
                 // 不跳转
               }
             } else {
-              console.log('❌ 返回结果结构异常');
-              alert('返回结果结构异常，无法处理');
+              console.log('❌ 返回结果结构异常，无法处理');
             }
           })
           .catch(function (error) {
@@ -1312,8 +1386,7 @@
             document.getElementById('result-handleHtmlLinkA').innerHTML = `<span style='color:red;'>调用失败: ${error}</span>`;
           });
       } else {
-        console.warn('❌ 未检测到桥接环境');
-        alert('未检测到桥接环境，无法调用 handleHtmlLink');
+        console.warn('❌ 未检测到桥接环境，无法调用 handleHtmlLink');
       }
     }
 
@@ -1511,7 +1584,11 @@
     function autoStartDiagnostics() {
       console.log('🚀 自动启动智能诊断...');
       console.log('📊 智能事件追踪系统已启动');
-      console.log(`🌍 当前环境: ${APP_CONFIG[currentEnvironment].displayName}`);
+      if (APP_CONFIG && APP_CONFIG.current) {
+        console.log(`🌍 当前环境: ${APP_CONFIG.current.displayName}`);
+      } else {
+        console.log('🌍 当前环境: 配置加载中...');
+      }
       console.log('✅ 支持自动环境适配和智能故障诊断');
     }
 
@@ -1520,8 +1597,8 @@
     // 更新环境特定信息（占位函数）
     function updateEnvironmentSpecificInfo() {
       const envInfo = document.getElementById('environmentSpecificInfo');
-      if (envInfo) {
-        const config = APP_CONFIG[currentEnvironment];
+      if (envInfo && APP_CONFIG && APP_CONFIG.current) {
+        const config = APP_CONFIG.current;
         envInfo.innerHTML = `
           <strong>📋 当前环境详情：</strong><br>
           <div style="margin-top:8px;font-size:0.95em;">
@@ -1547,8 +1624,8 @@
     function testEnvironmentSpecific() {
       console.log('🧪 环境适配专项测试');
       const resultBox = document.getElementById('result-environment-specific');
-      if (resultBox) {
-        const config = APP_CONFIG[currentEnvironment];
+      if (resultBox && APP_CONFIG && APP_CONFIG.current) {
+        const config = APP_CONFIG.current;
         resultBox.innerHTML = `
           <span style='color:#2575fc;'>
             [${new Date().toLocaleTimeString()}] 环境适配测试<br>
@@ -1560,25 +1637,22 @@
       }
     }
 
-    // 切换环境视图（占位函数）
+    // 切换环境视图（占位函数） - 已不再需要手动切换，配置从Flutter动态获取
     function switchEnvironmentView() {
-      console.log('🔄 切换环境视图');
-      currentEnvironment = currentEnvironment === 'sandbox' ? 'production' : 'sandbox';
+      console.log('🔄 重新获取最新配置');
 
-      // 重新检测环境状态
-      const bridgeAvailable = window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function';
-      updateEnvironmentPanel(bridgeAvailable);
-      updateEnvironmentSpecificInfo();
+      // 重新从Flutter端获取配置
+      detectCurrentEnvironment();
     }
 
     // 验证配置（占位函数）
     function validateConfiguration() {
       console.log('🔍 验证配置');
       const resultBox = document.getElementById('result-environment-specific');
-      if (resultBox) {
-        const config = APP_CONFIG[currentEnvironment];
+      if (resultBox && APP_CONFIG && APP_CONFIG.current) {
+        const config = APP_CONFIG.current;
         const validationResult = {
-          appToken: config.appToken !== 'your_prod_token_here',
+          appToken: config.appToken !== '无法获取' && config.appToken !== '无桥接环境',
           environment: config.environment,
           bridgeAvailable: !!window.flutter_inappwebview
         };
@@ -1586,7 +1660,7 @@
         resultBox.innerHTML = `
           <span style='color:#2575fc;'>
             [${new Date().toLocaleTimeString()}] 配置验证结果<br>
-            App Token有效: ${validationResult.appToken ? '✅ 是' : '❌ 否（需配置生产Token）'}<br>
+            App Token有效: ${validationResult.appToken ? '✅ 是' : '❌ 否（无法获取或无桥接环境）'}<br>
             环境类型: ${validationResult.environment}<br>
             桥接环境: ${validationResult.bridgeAvailable ? '✅ 可用' : '❌ 不可用'}
           </span>
@@ -1622,22 +1696,26 @@
     // 导出环境信息（占位函数）
     function exportEnvironmentInfo() {
       console.log('📊 导出环境信息');
-      const config = APP_CONFIG[currentEnvironment];
-      const envInfo = {
-        timestamp: new Date().toISOString(),
-        environment: config.displayName,
-        appToken: config.appToken,
-        bridgeAvailable: !!window.flutter_inappwebview,
-        userAgent: navigator.userAgent,
-        url: window.location.href
-      };
+      if (APP_CONFIG && APP_CONFIG.current) {
+        const config = APP_CONFIG.current;
+        const envInfo = {
+          timestamp: new Date().toISOString(),
+          environment: config.displayName,
+          appToken: config.appToken,
+          bridgeAvailable: !!window.flutter_inappwebview,
+          userAgent: navigator.userAgent,
+          url: window.location.href
+        };
 
-      console.log('导出的环境信息:', envInfo);
+        console.log('导出的环境信息:', envInfo);
 
-      // 复制到剪贴板
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(JSON.stringify(envInfo, null, 2))
-          .then(() => console.log('✅ 环境信息已复制到剪贴板'));
+        // 复制到剪贴板
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(JSON.stringify(envInfo, null, 2))
+            .then(() => console.log('✅ 环境信息已复制到剪贴板'));
+        }
+      } else {
+        console.log('❌ 配置未加载，无法导出环境信息');
       }
     }
 
