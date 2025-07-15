@@ -264,6 +264,46 @@
     <div style="font-size:1em;color:#2575fc;margin-bottom:8px;">【官方事件参数可编辑测试】</div>
     <div id="eventTrackerOfficialTests"></div>
 
+    <!-- 添加增强版 EventTracker 测试区域 -->
+    <hr style="margin:24px 0;">
+    <div style="font-size:1em;color:#ff6b35;margin-bottom:8px;">【🚀 增强版 EventTracker 测试】</div>
+    <div style="background:#fff0e6;border:1px solid #ff6b35;border-radius:6px;padding:12px;margin-bottom:12px;">
+      <strong>📋 增强版说明：</strong>
+      <ul style="margin:8px 0;padding-left:20px;font-size:0.95em;">
+        <li><strong>调用方式：直接调用原生 EventTracker 服务</strong></li>
+        <li>完整的服务器回调信息（成功/失败详情）</li>
+        <li>详细的设备信息和环境检测</li>
+        <li>实时显示 Adjust SDK 响应状态</li>
+        <li><strong style="color:#ff6b35;">⚡ 这是之前原生橙色bug按钮的功能！</strong></li>
+        <li>对比默认JSBridge：可看到完整处理流程和回调</li>
+      </ul>
+    </div>
+    <div style="background:#e6ffed;border:1px solid #52c41a;border-radius:6px;padding:12px;margin-bottom:12px;">
+      <strong style="color:#237804;">🔍 与默认eventTracker区别：</strong>
+      <ol style="margin:8px 0;padding-left:20px;font-size:0.95em;color:#237804;">
+        <li><strong>默认版本</strong>：简单的桥接调用，日志较少</li>
+        <li><strong>增强版本</strong>：完整的回调监听，详细的调试信息</li>
+        <li>增强版会显示：服务器响应、ADID、环境状态、错误详情</li>
+        <li>适合调试和验证Adjust事件是否真正成功上报</li>
+        <li>原生Home页面的橙色bug按钮功能现在在这里</li>
+      </ol>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+      <button onclick="testEnhancedEventTracker('firstOpen')"
+        style="background:#ff6b35;color:#fff;flex:1;min-width:200px;">🚀 增强版 firstOpen</button>
+      <button onclick="testEnhancedEventTracker('register')"
+        style="background:#722ed1;color:#fff;flex:1;min-width:150px;">📝 增强版 register</button>
+      <button onclick="testEnhancedEventTracker('deposit')"
+        style="background:#52c41a;color:#fff;flex:1;min-width:150px;">💰 增强版 deposit</button>
+    </div>
+    <div id="result-enhanced-tracker" class="result-box"></div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button onclick="copyResult('result-enhanced-tracker')"
+        style="background:#e6f7ff;color:#1890ff;flex:1;">复制结果</button>
+      <button onclick="clearEnhancedResult()" style="background:#f6f8fa;color:#666;flex:1;">清除结果</button>
+      <button onclick="compareWithDefault()" style="background:#fa8c16;color:#fff;flex:1;">🔄 对比测试</button>
+    </div>
+
     <!-- 添加专门的 firstOpen 沙盒测试区域 -->
     <hr style="margin:24px 0;">
     <div style="font-size:1em;color:#2575fc;margin-bottom:8px;">【🧪 沙盒环境 firstOpen 专项测试】</div>
@@ -1332,6 +1372,209 @@
       if (banner && banner.nextSibling) {
         banner.parentNode.insertBefore(envInfo, banner.nextSibling);
       }
+    }
+
+    // 增强版 EventTracker 测试函数
+    function testEnhancedEventTracker(eventName) {
+      if (!checkBridgeEnv()) {
+        showResult('result-enhanced-tracker', 'enhancedEventTracker', {}, '[未检测到桥接环境]');
+        return;
+      }
+
+      console.log('🚀 开始增强版 EventTracker 测试:', eventName);
+
+      // 设置默认的事件参数
+      const defaultParams = {
+        firstOpen: {},
+        register: {
+          method: 'username',
+          customerId: 12345,
+          customerName: '张三',
+          mobileNum: '13800138000'
+        },
+        deposit: {
+          customerName: '张三',
+          customerId: 12345,
+          revenue: '100',
+          value: '100',
+          af_revenue: 100
+        }
+      };
+
+      const eventValue = defaultParams[eventName] || {};
+      const timestamp = new Date().toISOString();
+
+      // 显示开始测试的状态
+      const resultBox = document.getElementById('result-enhanced-tracker');
+      resultBox.innerHTML = `
+        <div style="color:#ff6b35;font-weight:bold;">🚀 正在调用增强版 EventTracker...</div>
+        <div style="color:#666;font-size:0.9em;margin-top:4px;">
+          📋 事件名称: ${eventName}<br>
+          📊 事件参数: ${JSON.stringify(eventValue)}<br>
+          ⏰ 开始时间: ${timestamp}<br>
+          🔄 调用方式: 增强版 (直接调用原生 EventTracker 服务)
+        </div>
+      `;
+
+      // 调用我们在main.dart中定义的增强处理函数
+      // 注意：这里我们使用特殊的handler名称来调用增强版
+      window.flutter_inappwebview.callHandler('enhancedEventTracker', {
+        eventName: eventName,
+        eventValue: eventValue
+      }).then(function (result) {
+        console.log('✅ 增强版 EventTracker 调用成功:', result);
+
+        const endTime = new Date().toISOString();
+        let resultHtml = `
+          <div style="border:2px solid #ff6b35;border-radius:8px;padding:12px;margin:8px 0;">
+            <div style="color:#ff6b35;font-weight:bold;">🎉 增强版 EventTracker 测试完成</div>
+            <div style="color:#666;font-size:0.9em;margin-top:8px;">
+              📋 事件名称: ${eventName}<br>
+              📊 事件参数: ${JSON.stringify(eventValue)}<br>
+              ⏰ 开始时间: ${timestamp}<br>
+              ⏰ 完成时间: ${endTime}<br>
+              🔄 调用方式: 增强版 (原生 EventTracker 服务)
+            </div>
+          </div>
+        `;
+
+        if (result && result.code === 0) {
+          resultHtml += `
+            <div style="background:#e6ffed;border:1px solid #52c41a;border-radius:6px;padding:10px;margin:8px 0;">
+              <div style="color:#237804;font-weight:bold;">✅ 增强版处理成功！</div>
+              <div style="color:#52c41a;font-size:0.9em;margin-top:4px;">
+                📤 事件已通过增强版 EventTracker 发送<br>
+                🎯 包含完整的回调监听和调试信息<br>
+                📊 处理结果: ${JSON.stringify(result.data || result)}<br>
+                💡 请查看控制台获取详细的 Adjust 回调信息
+              </div>
+            </div>
+            <div style="background:#fff0e6;border:1px solid #ff6b35;border-radius:6px;padding:10px;margin:8px 0;">
+              <div style="color:#ff6b35;font-weight:bold;">🔍 增强版特色功能：</div>
+              <div style="color:#d45087;font-size:0.9em;margin-top:4px;">
+                • 完整的 Adjust 服务器回调信息<br>
+                • 实时的设备 ADID 和环境状态<br>
+                • 详细的错误诊断和调试信息<br>
+                • 这就是原来原生 Home 页面橙色 bug 按钮的功能！<br>
+                • 对比默认 JSBridge：可以看到完整的处理流程
+              </div>
+            </div>
+          `;
+        } else {
+          resultHtml += `
+            <div style="background:#fff1f0;border:1px solid #cf1322;border-radius:6px;padding:10px;margin:8px 0;">
+              <div style="color:#cf1322;font-weight:bold;">❌ 增强版处理失败</div>
+              <div style="color:#cf1322;font-size:0.9em;margin-top:4px;">
+                错误信息: ${result?.msg || '未知错误'}<br>
+                返回结果: ${JSON.stringify(result)}
+              </div>
+            </div>
+          `;
+        }
+
+        resultBox.innerHTML = resultHtml;
+      }).catch(function (err) {
+        console.error('❌ 增强版 EventTracker 调用失败:', err);
+
+        const errorHtml = `
+          <div style="border:2px solid #cf1322;border-radius:8px;padding:12px;margin:8px 0;">
+            <div style="color:#cf1322;font-weight:bold;">❌ 增强版 EventTracker 调用异常</div>
+            <div style="color:#cf1322;font-size:0.9em;margin-top:8px;">
+              错误信息: ${err}<br>
+              ⚠️ 可能原因: 增强版处理器未正确注册<br>
+              💡 回退方案: 请使用默认的 eventTracker 测试
+            </div>
+          </div>
+        `;
+
+        resultBox.innerHTML = errorHtml;
+      });
+    }
+
+    // 清除增强版测试结果
+    function clearEnhancedResult() {
+      const resultBox = document.getElementById('result-enhanced-tracker');
+      if (resultBox) {
+        resultBox.innerHTML = '<div style="color:#999;">增强版测试结果已清除，可以重新测试</div>';
+      }
+      console.log('🧹 已清除增强版测试结果');
+    }
+
+    // 对比测试：同时调用默认版和增强版
+    function compareWithDefault() {
+      if (!checkBridgeEnv()) {
+        alert('未检测到桥接环境，无法进行对比测试');
+        return;
+      }
+
+      console.log('🔄 开始对比测试：默认版 vs 增强版');
+
+      const resultBox = document.getElementById('result-enhanced-tracker');
+      resultBox.innerHTML = `
+        <div style="color:#fa8c16;font-weight:bold;">🔄 正在进行对比测试...</div>
+        <div style="color:#666;font-size:0.9em;margin-top:4px;">
+          同时调用默认版和增强版 EventTracker，对比结果差异
+        </div>
+      `;
+
+      const eventName = 'firstOpen';
+      const eventValue = {};
+      const startTime = Date.now();
+
+      Promise.all([
+        // 默认版本
+        window.flutter_inappwebview.callHandler('eventTracker', {
+          eventName: eventName,
+          eventValue: eventValue
+        }),
+        // 增强版本
+        window.flutter_inappwebview.callHandler('enhancedEventTracker', {
+          eventName: eventName,
+          eventValue: eventValue
+        })
+      ]).then(function (results) {
+        const endTime = Date.now();
+        const [defaultResult, enhancedResult] = results;
+
+        const compareHtml = `
+          <div style="border:2px solid #fa8c16;border-radius:8px;padding:12px;margin:8px 0;">
+            <div style="color:#fa8c16;font-weight:bold;">🔄 对比测试完成 (耗时: ${endTime - startTime}ms)</div>
+            <div style="margin-top:12px;">
+              <div style="background:#f0f7ff;border:1px solid #1890ff;border-radius:6px;padding:8px;margin-bottom:8px;">
+                <div style="color:#1890ff;font-weight:bold;">📊 默认版 eventTracker 结果：</div>
+                <div style="color:#666;font-size:0.9em;margin-top:4px;font-family:monospace;">
+                  ${JSON.stringify(defaultResult, null, 2)}
+                </div>
+              </div>
+              <div style="background:#fff0e6;border:1px solid #ff6b35;border-radius:6px;padding:8px;">
+                <div style="color:#ff6b35;font-weight:bold;">🚀 增强版 enhancedEventTracker 结果：</div>
+                <div style="color:#666;font-size:0.9em;margin-top:4px;font-family:monospace;">
+                  ${JSON.stringify(enhancedResult, null, 2)}
+                </div>
+              </div>
+            </div>
+            <div style="background:#e6ffed;border:1px solid #52c41a;border-radius:6px;padding:8px;margin-top:8px;">
+              <div style="color:#237804;font-weight:bold;">📝 对比分析：</div>
+              <div style="color:#52c41a;font-size:0.9em;margin-top:4px;">
+                • 默认版：${defaultResult ? '成功' : '失败'} - 基础桥接调用<br>
+                • 增强版：${enhancedResult ? '成功' : '失败'} - 包含详细回调信息<br>
+                • 两个版本都成功说明事件处理正常<br>
+                • 增强版会在控制台显示更多调试信息
+              </div>
+            </div>
+          </div>
+        `;
+
+        resultBox.innerHTML = compareHtml;
+      }).catch(function (err) {
+        console.error('❌ 对比测试失败:', err);
+        resultBox.innerHTML = `
+          <div style="color:#cf1322;font-weight:bold;">❌ 对比测试失败</div>
+          <div style="color:#cf1322;font-size:0.9em;margin-top:4px;">
+            错误信息: ${err}
+          </div>
+        `;
+      });
     }
 
     // 增强的事件测试函数（可配置参数）
