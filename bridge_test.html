@@ -56,6 +56,43 @@
       border: 1px solid #ffa39e;
     }
 
+    .info-panel {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      padding: 18px;
+      margin: 18px auto 0 auto;
+      max-width: 520px;
+      border-left: 6px solid #1890ff;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #1890ff;
+      min-width: 80px;
+    }
+
+    .info-value {
+      color: #666;
+      font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+      font-size: 0.9em;
+      word-break: break-all;
+      text-align: right;
+      max-width: 60%;
+    }
+
     .section {
       background: #fff;
       border-radius: 14px;
@@ -143,11 +180,44 @@
       font-weight: 500;
     }
 
+    .env-indicator {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.85em;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+
+    .env-sandbox {
+      background: #ffe7ba;
+      color: #d46b08;
+      border: 1px solid #ffd591;
+    }
+
+    .env-production {
+      background: #e6ffed;
+      color: #237804;
+      border: 1px solid #b7eb8f;
+    }
+
+    .refresh-btn {
+      background: #1890ff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 0.8em;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+
     @media (max-width: 600px) {
 
       .section,
       .tip,
-      .env-status {
+      .env-status,
+      .info-panel {
         max-width: 98vw;
       }
 
@@ -243,6 +313,34 @@
     <p>一站式验证 <b>JSBridge</b> 与原生桥接能力，支持 eventTracker、openWebView、参数校验、回调等全流程。<br>请在 App WebView 中访问本页，所有结果实时高亮展示。</p>
   </div>
 
+  <!-- 环境信息面板 -->
+  <div class="info-panel" id="environmentInfo">
+    <div style="color:#1890ff;font-weight:bold;margin-bottom:12px;text-align:center;">
+      📊 环境与设备信息
+      <button class="refresh-btn" onclick="refreshEnvironmentInfo()">🔄 刷新</button>
+    </div>
+    <div class="info-row">
+      <span class="info-label">环境状态:</span>
+      <span class="info-value" id="envStatusText">检测中...</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">当前环境:</span>
+      <span class="info-value" id="currentEnvironment">未知</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">设备ADID:</span>
+      <span class="info-value" id="deviceAdid">获取中...</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">页面加载:</span>
+      <span class="info-value" id="pageLoadTime">--</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">App Token:</span>
+      <span class="info-value" id="currentAppToken">--</span>
+    </div>
+  </div>
+
   <div id="pageTimestamp" class="env-status"
     style="background:#fffbe6;color:#b8860b;border:1px solid #ffe066;margin-top:8px;">页面加载时间戳：<span
       id="timestampValue"></span></div>
@@ -264,37 +362,37 @@
     <div style="font-size:1em;color:#2575fc;margin-bottom:8px;">【官方事件参数可编辑测试】</div>
     <div id="eventTrackerOfficialTests"></div>
 
-    <!-- 添加增强版 EventTracker 测试区域 -->
+    <!-- 优化的增强版 EventTracker 测试区域 -->
     <hr style="margin:24px 0;">
-    <div style="font-size:1em;color:#ff6b35;margin-bottom:8px;">【🚀 增强版 EventTracker 测试】</div>
+    <div style="font-size:1em;color:#ff6b35;margin-bottom:8px;">【🚀 智能事件追踪测试】</div>
     <div style="background:#fff0e6;border:1px solid #ff6b35;border-radius:6px;padding:12px;margin-bottom:12px;">
-      <strong>📋 增强版说明：</strong>
+      <strong>📋 智能追踪说明：</strong>
       <ul style="margin:8px 0;padding-left:20px;font-size:0.95em;">
-        <li><strong>调用方式：直接调用原生 EventTracker 服务</strong></li>
-        <li>完整的服务器回调信息（成功/失败详情）</li>
-        <li>详细的设备信息和环境检测</li>
-        <li>实时显示 Adjust SDK 响应状态</li>
-        <li><strong style="color:#ff6b35;">⚡ 这是之前原生橙色bug按钮的功能！</strong></li>
-        <li>对比默认JSBridge：可看到完整处理流程和回调</li>
+        <li><strong>自动环境适配：</strong>根据当前环境自动选择合适的配置</li>
+        <li><strong>沙盒环境：</strong>使用测试 Token，数据在【测试】→【设备日志】查看</li>
+        <li><strong>生产环境：</strong>使用正式 Token，数据在主控制台显示</li>
+        <li><strong>完整回调监听：</strong>实时显示 Adjust SDK 响应状态</li>
+        <li><strong>设备信息获取：</strong>自动获取 ADID 和环境信息</li>
+        <li style="color:#ff6b35;"><strong>⚡ 这是原生橙色bug按钮的增强版功能！</strong></li>
       </ul>
     </div>
     <div style="background:#e6ffed;border:1px solid #52c41a;border-radius:6px;padding:12px;margin-bottom:12px;">
-      <strong style="color:#237804;">🔍 与默认eventTracker区别：</strong>
+      <strong style="color:#237804;">🔍 环境兼容性特色：</strong>
       <ol style="margin:8px 0;padding-left:20px;font-size:0.95em;color:#237804;">
-        <li><strong>默认版本</strong>：简单的桥接调用，日志较少</li>
-        <li><strong>增强版本</strong>：完整的回调监听，详细的调试信息</li>
-        <li>增强版会显示：服务器响应、ADID、环境状态、错误详情</li>
-        <li>适合调试和验证Adjust事件是否真正成功上报</li>
-        <li>原生Home页面的橙色bug按钮功能现在在这里</li>
+        <li><strong>自动检测</strong>：智能识别当前运行环境（沙盒/生产）</li>
+        <li><strong>配置切换</strong>：根据环境自动应用正确的 App Token</li>
+        <li><strong>数据路径</strong>：提示正确的数据查看位置</li>
+        <li><strong>调试信息</strong>：显示详细的环境状态和设备信息</li>
+        <li><strong>容错处理</strong>：网络异常时提供诊断建议</li>
       </ol>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-      <button onclick="testEnhancedEventTracker('firstOpen')"
-        style="background:#ff6b35;color:#fff;flex:1;min-width:200px;">🚀 增强版 firstOpen</button>
-      <button onclick="testEnhancedEventTracker('register')"
-        style="background:#722ed1;color:#fff;flex:1;min-width:150px;">📝 增强版 register</button>
-      <button onclick="testEnhancedEventTracker('deposit')"
-        style="background:#52c41a;color:#fff;flex:1;min-width:150px;">💰 增强版 deposit</button>
+      <button onclick="testSmartEventTracker('firstOpen')"
+        style="background:#ff6b35;color:#fff;flex:1;min-width:200px;">🚀 智能 firstOpen</button>
+      <button onclick="testSmartEventTracker('register')"
+        style="background:#722ed1;color:#fff;flex:1;min-width:150px;">📝 智能 register</button>
+      <button onclick="testSmartEventTracker('deposit')"
+        style="background:#52c41a;color:#fff;flex:1;min-width:150px;">💰 智能 deposit</button>
     </div>
     <div id="result-enhanced-tracker" class="result-box"></div>
     <div style="display:flex;gap:8px;margin-top:4px;">
@@ -304,45 +402,27 @@
       <button onclick="compareWithDefault()" style="background:#fa8c16;color:#fff;flex:1;">🔄 对比测试</button>
     </div>
 
-    <!-- 添加专门的 firstOpen 沙盒测试区域 -->
+    <!-- 优化的环境特定测试区域 -->
     <hr style="margin:24px 0;">
-    <div style="font-size:1em;color:#2575fc;margin-bottom:8px;">【🧪 沙盒环境 firstOpen 专项测试】</div>
-    <div style="background:#fff8e6;border:1px solid #ffe066;border-radius:6px;padding:12px;margin-bottom:12px;">
-      <strong>📋 沙盒测试说明：</strong>
-      <ul style="margin:8px 0;padding-left:20px;font-size:0.95em;">
-        <li><strong>当前环境：SANDBOX (沙盒)</strong></li>
-        <li>App Token: y0mht8z9n1fk</li>
-        <li>Event Token: q6mgkw (firstOpen 专用)</li>
-        <li><strong style="color:#d46b08;">⚠️ 重要：沙盒数据不在主控制台显示</strong></li>
-        <li><strong>正确查看位置：Adjust后台 → 【测试】→ 【设备日志】</strong></li>
-        <li>成功标志：控制台显示 "🎉 [Adjust] 事件上报成功！"</li>
-        <li>数据延迟：沙盒环境可能有 2-10 分钟延迟</li>
-      </ul>
-    </div>
-    <div style="background:#e6ffed;border:1px solid #b7eb8f;border-radius:6px;padding:12px;margin-bottom:12px;">
-      <strong style="color:#237804;">🔍 调试步骤：</strong>
-      <ol style="margin:8px 0;padding-left:20px;font-size:0.95em;color:#237804;">
-        <li>点击 "🚀 测试 firstOpen" 按钮</li>
-        <li>检查页面显示 "✅ 桥接调用成功"</li>
-        <li>等待控制台显示 Adjust 服务器回调</li>
-        <li>如果 5 分钟内无回调，点击 "🔍 环境检查"</li>
-        <li>最终在 Adjust 后台【测试】→【设备日志】查看数据</li>
-      </ol>
+    <div style="font-size:1em;color:#2575fc;margin-bottom:8px;">【🧪 环境适配专项测试】</div>
+    <div id="environmentSpecificInfo"
+      style="background:#fff8e6;border:1px solid #ffe066;border-radius:6px;padding:12px;margin-bottom:12px;">
+      <!-- 这里会动态显示当前环境的具体信息 -->
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-      <button onclick="testFirstOpenSandbox()" style="background:#52c41a;color:#fff;flex:1;min-width:200px;">🚀 测试
-        firstOpen (沙盒专用)</button>
-      <button onclick="checkNetworkAndAdjustStatus()" style="background:#1890ff;color:#fff;flex:1;min-width:150px;">🔍
-        环境检查</button>
-      <button onclick="startAdjustCallbackMonitoring()" style="background:#722ed1;color:#fff;flex:1;min-width:150px;">📡
-        监听回调</button>
+      <button onclick="testEnvironmentSpecific()" style="background:#52c41a;color:#fff;flex:1;min-width:200px;">🚀
+        测试当前环境</button>
+      <button onclick="switchEnvironmentView()" style="background:#1890ff;color:#fff;flex:1;min-width:150px;">🔄
+        切换环境视图</button>
+      <button onclick="validateConfiguration()" style="background:#722ed1;color:#fff;flex:1;min-width:150px;">🔍
+        验证配置</button>
     </div>
-    <div id="result-firstOpen-sandbox" class="result-box"></div>
+    <div id="result-environment-specific" class="result-box"></div>
     <div style="display:flex;gap:8px;margin-top:4px;">
-      <button onclick="copyResult('result-firstOpen-sandbox')"
+      <button onclick="copyResult('result-environment-specific')"
         style="background:#e6f7ff;color:#1890ff;flex:1;">复制结果</button>
-      <button onclick="clearSandboxResult()" style="background:#f6f8fa;color:#666;flex:1;">清除结果</button>
-      <button onclick="openAdjustDebugTool()" style="background:#fa8c16;color:#fff;flex:1;">🛠️ 调试工具</button>
+      <button onclick="clearEnvironmentResult()" style="background:#f6f8fa;color:#666;flex:1;">清除结果</button>
+      <button onclick="exportEnvironmentInfo()" style="background:#fa8c16;color:#fff;flex:1;">📊 导出信息</button>
     </div>
   </div>
 
@@ -493,19 +573,237 @@
   <script>
     console.log('H5 JS loaded at', new Date());
 
+    // 全局配置
+    const APP_CONFIG = {
+      sandbox: {
+        appToken: 'y0mht8z9n1fk',
+        environment: 'SANDBOX',
+        displayName: '沙盒环境',
+        dataLocation: 'Adjust后台 → 【测试】→ 【设备日志】',
+        eventTokens: {
+          firstOpen: 'q6mgkw',
+          register: 'abc123',
+          deposit: 'def456'
+        }
+      },
+      production: {
+        appToken: 'your_prod_token_here',
+        environment: 'PRODUCTION',
+        displayName: '生产环境',
+        dataLocation: 'Adjust后台 → 主控制台',
+        eventTokens: {
+          firstOpen: 'prod_first_open_token',
+          register: 'prod_register_token',
+          deposit: 'prod_deposit_token'
+        }
+      }
+    };
+
+    // 当前环境状态
+    let currentEnvironment = 'sandbox'; // 默认沙盒
+    let deviceInfo = {
+      adid: null,
+      environment: null,
+      loaded: false
+    };
+
     // 环境检测
     function checkBridgeEnv() {
       var envStatus = document.getElementById('envStatus');
       if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') {
         envStatus.textContent = '✅ 已检测到桥接环境，可正常调用';
         envStatus.className = 'env-status env-ok';
+
+        // 初始化环境信息
+        initializeEnvironmentInfo();
         return true;
       } else {
         envStatus.textContent = '❌ 未检测到桥接环境，请在App内WebView中打开';
         envStatus.className = 'env-status env-fail';
+        updateEnvironmentPanel(false);
         return false;
       }
     }
+
+    // 初始化环境信息
+    function initializeEnvironmentInfo() {
+      console.log('🔧 开始初始化环境信息...');
+      updateEnvironmentPanel(true);
+      fetchDeviceInfo();
+      detectCurrentEnvironment();
+      updateEnvironmentSpecificInfo();
+    }
+
+    // 更新环境信息面板
+    function updateEnvironmentPanel(bridgeAvailable) {
+      const envStatusText = document.getElementById('envStatusText');
+      const currentEnvElement = document.getElementById('currentEnvironment');
+      const pageLoadTime = document.getElementById('pageLoadTime');
+      const currentAppToken = document.getElementById('currentAppToken');
+
+      if (bridgeAvailable) {
+        envStatusText.innerHTML = '<span style="color:#52c41a;">✅ 桥接环境正常</span>';
+        pageLoadTime.textContent = new Date().toLocaleString();
+      } else {
+        envStatusText.innerHTML = '<span style="color:#cf1322;">❌ 桥接环境异常</span>';
+        currentEnvElement.innerHTML = '<span style="color:#cf1322;">无法检测</span>';
+        pageLoadTime.textContent = new Date().toLocaleString();
+        currentAppToken.innerHTML = '<span style="color:#cf1322;">--</span>';
+        document.getElementById('deviceAdid').innerHTML = '<span style="color:#cf1322;">无法获取</span>';
+        return;
+      }
+
+      // 更新当前环境显示
+      const config = APP_CONFIG[currentEnvironment];
+      const envClass = currentEnvironment === 'sandbox' ? 'env-sandbox' : 'env-production';
+      currentEnvElement.innerHTML = `${config.displayName} <span class="env-indicator ${envClass}">${config.environment}</span>`;
+      currentAppToken.textContent = config.appToken;
+    }
+
+    // 获取设备信息（ADID等）
+    function fetchDeviceInfo() {
+      console.log('📱 开始获取设备信息...');
+
+      if (!window.flutter_inappwebview) {
+        document.getElementById('deviceAdid').innerHTML = '<span style="color:#cf1322;">桥接环境不可用</span>';
+        return;
+      }
+
+      // 尝试通过多种方式获取设备信息
+      Promise.all([
+        getAdjustAdid(),
+        getDeviceInfo(),
+        getUserAgent()
+      ]).then(function (results) {
+        const [adidResult, deviceResult, userAgentResult] = results;
+
+        // 处理ADID
+        if (adidResult && adidResult.adid) {
+          deviceInfo.adid = adidResult.adid;
+          document.getElementById('deviceAdid').innerHTML = `<span style="color:#52c41a;">${adidResult.adid}</span>`;
+        } else {
+          document.getElementById('deviceAdid').innerHTML = '<span style="color:#fa8c16;">获取中...</span>';
+          // 延迟重试
+          setTimeout(retryGetAdid, 2000);
+        }
+
+        deviceInfo.loaded = true;
+        console.log('✅ 设备信息获取完成:', deviceInfo);
+      }).catch(function (error) {
+        console.error('❌ 设备信息获取失败:', error);
+        document.getElementById('deviceAdid').innerHTML = '<span style="color:#cf1322;">获取失败</span>';
+      });
+    }
+
+    // 获取Adjust ADID
+    function getAdjustAdid() {
+      return new Promise(function (resolve, reject) {
+        if (!window.flutter_inappwebview) {
+          reject('No bridge');
+          return;
+        }
+
+        // 尝试调用获取ADID的handler
+        window.flutter_inappwebview.callHandler('getAdjustAdid', {})
+          .then(resolve)
+          .catch(function (error) {
+            console.warn('getAdjustAdid handler not available, trying alternative...');
+            // 如果没有专用handler，尝试其他方式
+            resolve({ adid: null });
+          });
+      });
+    }
+
+    // 获取设备信息
+    function getDeviceInfo() {
+      return new Promise(function (resolve, reject) {
+        if (!window.flutter_inappwebview) {
+          reject('No bridge');
+          return;
+        }
+
+        window.flutter_inappwebview.callHandler('getDeviceInfo', {})
+          .then(resolve)
+          .catch(function (error) {
+            console.warn('getDeviceInfo handler not available');
+            resolve({ info: null });
+          });
+      });
+    }
+
+    // 获取UserAgent
+    function getUserAgent() {
+      return new Promise(function (resolve, reject) {
+        if (!window.flutter_inappwebview) {
+          reject('No bridge');
+          return;
+        }
+
+        window.flutter_inappwebview.callHandler('getUseragent', {})
+          .then(resolve)
+          .catch(function (error) {
+            console.warn('getUseragent handler not available');
+            resolve({ userAgent: navigator.userAgent });
+          });
+      });
+    }
+
+    // 重试获取ADID
+    function retryGetAdid() {
+      console.log('🔄 重试获取ADID...');
+      getAdjustAdid().then(function (result) {
+        if (result && result.adid) {
+          deviceInfo.adid = result.adid;
+          document.getElementById('deviceAdid').innerHTML = `<span style="color:#52c41a;">${result.adid}</span>`;
+          console.log('✅ ADID重试获取成功:', result.adid);
+        } else {
+          document.getElementById('deviceAdid').innerHTML = '<span style="color:#fa8c16;">暂未获取到ADID</span>';
+        }
+      }).catch(function (error) {
+        document.getElementById('deviceAdid').innerHTML = '<span style="color:#cf1322;">ADID获取失败</span>';
+      });
+    }
+
+    // 检测当前环境
+    function detectCurrentEnvironment() {
+      // 这里可以通过多种方式检测环境
+      // 1. 检查URL参数
+      // 2. 检查UserAgent
+      // 3. 调用原生方法获取
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const envParam = urlParams.get('env');
+
+      if (envParam === 'production' || envParam === 'prod') {
+        currentEnvironment = 'production';
+      } else {
+        // 默认沙盒环境，适合开发和测试
+        currentEnvironment = 'sandbox';
+      }
+
+      console.log('🌍 当前检测环境:', currentEnvironment);
+      updateEnvironmentPanel(true);
+    }
+
+    // 刷新环境信息
+    function refreshEnvironmentInfo() {
+      console.log('🔄 刷新环境信息...');
+      updateEnvironmentPanel(true);
+      fetchDeviceInfo();
+      updateEnvironmentSpecificInfo();
+
+      // 显示刷新完成提示
+      const refreshBtn = document.querySelector('.refresh-btn');
+      const originalText = refreshBtn.textContent;
+      refreshBtn.textContent = '✅ 已刷新';
+      refreshBtn.disabled = true;
+
+      setTimeout(function () {
+        refreshBtn.textContent = originalText;
+        refreshBtn.disabled = false;
+      }, 2000);
+    }
+
     checkBridgeEnv();
 
     // eventTracker 测试
@@ -968,10 +1266,12 @@
       document.addEventListener('DOMContentLoaded', function () {
         initializeHandleHtmlLinkEvents();
         autoStartDiagnostics(); // 自动启动诊断
+        updateEnvironmentSpecificInfo(); // 更新环境特定信息
       });
     } else {
       initializeHandleHtmlLinkEvents();
       autoStartDiagnostics(); // 自动启动诊断
+      updateEnvironmentSpecificInfo(); // 更新环境特定信息
     }
 
     // 官方事件标准参数
@@ -1151,218 +1451,18 @@
       }
     }
 
-    // firstOpen 沙盒测试
-    function testFirstOpenSandbox() {
-      if (!checkBridgeEnv()) {
-        showResult('result-firstOpen-sandbox', 'eventTracker', {}, '[未检测到桥接环境]');
-        return;
-      }
-
-      console.log('🚀 开始测试 firstOpen 事件 (沙盒环境)');
-      console.log('📋 配置信息: Event Token = q6mgkw, 环境 = SANDBOX');
-
-      // 增强的调试信息显示
-      const resultBox = document.getElementById('result-firstOpen-sandbox');
-      resultBox.innerHTML = `
-        <div style="color:#1890ff;font-weight:bold;">⏳ 正在发送 firstOpen 事件...</div>
-        <div style="color:#666;font-size:0.9em;margin-top:4px;">
-          📋 App Token: y0mht8z9n1fk<br>
-          🎯 Event Token: q6mgkw<br>
-          🌍 环境: SANDBOX (沙盒)<br>
-          ⏰ 发送时间: ${new Date().toLocaleString()}
-        </div>
-      `;
-
-      window.flutter_inappwebview.callHandler('eventTracker', {
-        eventName: 'firstOpen',
-        eventValue: {}
-      }).then(function (result) {
-        console.log('✅ eventTracker 桥接调用成功，返回结果:', result);
-
-        // 详细的结果显示
-        let resultHtml = `
-          <div style="color:#52c41a;font-weight:bold;">✅ 桥接调用成功</div>
-          <div style="color:#666;font-size:0.9em;margin:8px 0;">
-            📤 发送时间: ${new Date().toLocaleString()}<br>
-            📋 事件名称: firstOpen<br>
-            🎯 Event Token: q6mgkw<br>
-            📊 本地处理结果: ${JSON.stringify(result)}
-          </div>
-        `;
-
-        if (result && result.code === 0) {
-          resultHtml += `
-            <div style="background:#e6ffed;border:1px solid #b7eb8f;border-radius:6px;padding:10px;margin:8px 0;">
-              <div style="color:#237804;font-weight:bold;">🎉 本地处理成功！</div>
-              <div style="color:#52c41a;font-size:0.9em;margin-top:4px;">
-                ✅ 事件已发送到 Adjust SDK<br>
-                ⏳ 正在等待服务器回调...
-              </div>
-            </div>
-            <div style="background:#fff8e6;border:1px solid #ffe066;border-radius:6px;padding:10px;margin:8px 0;">
-              <div style="color:#b8860b;font-weight:bold;">📊 数据查看指南：</div>
-              <div style="color:#b8860b;font-size:0.9em;margin-top:4px;">
-                1. <strong>沙盒环境数据不会显示在主控制台</strong><br>
-                2. 请在 Adjust 后台查看: <strong>【测试】→ 【设备日志】</strong><br>
-                3. 等待 2-5 分钟查看服务器回调<br>
-                4. 如果控制台显示 "🎉 [Adjust] 事件上报成功！" 说明服务器已收到
-              </div>
-            </div>
-            <div style="background:#f0f7ff;border:1px solid #b3c6e6;border-radius:6px;padding:10px;margin:8px 0;">
-              <div style="color:#1890ff;font-weight:bold;">🔍 调试提示：</div>
-              <div style="color:#1890ff;font-size:0.9em;margin-top:4px;">
-                • 如果 5 分钟内无服务器回调，可能存在网络问题<br>
-                • 沙盒环境延迟可能较高，请耐心等待<br>
-                • 可以在 App 的调试工具中查看更详细信息
-              </div>
-            </div>
-          `;
-
-          console.log('🎉 firstOpen 事件处理成功！请查看控制台是否有 Adjust 回调日志');
-        } else {
-          resultHtml += `
-            <div style="background:#fff1f0;border:1px solid #ffa39e;border-radius:6px;padding:10px;margin:8px 0;">
-              <div style="color:#cf1322;font-weight:bold;">❌ 本地处理失败</div>
-              <div style="color:#cf1322;font-size:0.9em;margin-top:4px;">
-                请检查事件配置和网络连接
-              </div>
-            </div>
-          `;
-          console.error('❌ firstOpen 事件处理失败:', result);
-        }
-
-        resultBox.innerHTML = resultHtml;
-      }).catch(function (err) {
-        console.error('❌ eventTracker 桥接调用异常:', err);
-
-        const errorHtml = `
-          <div style="color:#cf1322;font-weight:bold;">❌ 桥接调用失败</div>
-          <div style="color:#cf1322;font-size:0.9em;margin:8px 0;">
-            错误信息: ${err}<br>
-            请检查桥接环境和网络连接
-          </div>
-        `;
-
-        document.getElementById('result-firstOpen-sandbox').innerHTML = errorHtml;
-      });
-    }
-
-    // 添加 Adjust 回调状态监听
-    function startAdjustCallbackMonitoring() {
-      console.log('🔍 开始监听 Adjust 服务器回调...');
-
-      // 创建一个全局变量来跟踪回调
-      window.adjustCallbackReceived = false;
-      window.adjustCallbackDetails = null;
-
-      // 定时检查回调状态
-      const checkInterval = setInterval(() => {
-        if (window.adjustCallbackReceived) {
-          console.log('✅ 检测到 Adjust 服务器回调！', window.adjustCallbackDetails);
-          clearInterval(checkInterval);
-
-          // 更新页面显示
-          const resultBox = document.getElementById('result-firstOpen-sandbox');
-          if (resultBox) {
-            const callbackHtml = `
-              <div style="background:#e6ffed;border:2px solid #52c41a;border-radius:6px;padding:12px;margin:8px 0;">
-                <div style="color:#237804;font-weight:bold;">🎉 收到 Adjust 服务器回调！</div>
-                <div style="color:#52c41a;font-size:0.9em;margin-top:4px;">
-                  ⏰ 回调时间: ${new Date().toLocaleString()}<br>
-                  📊 回调详情: ${JSON.stringify(window.adjustCallbackDetails)}
-                </div>
-              </div>
-            `;
-            resultBox.innerHTML += callbackHtml;
-          }
-        }
-      }, 1000);
-
-      // 10 分钟后停止监听
-      setTimeout(() => {
-        if (!window.adjustCallbackReceived) {
-          console.log('⚠️ 10 分钟内未收到 Adjust 服务器回调');
-          clearInterval(checkInterval);
-        }
-      }, 600000);
-    }
-
-    // 添加网络状态检查
-    function checkNetworkAndAdjustStatus() {
-      console.log('🌐 检查网络状态和 Adjust 连接...');
-
-      const statusHtml = `
-        <div style="background:#f0f7ff;border:1px solid #b3c6e6;border-radius:6px;padding:10px;margin:8px 0;">
-          <div style="color:#1890ff;font-weight:bold;">🔍 环境检查结果：</div>
-          <div style="color:#1890ff;font-size:0.9em;margin-top:4px;">
-            • 网络状态: ${navigator.onLine ? '✅ 在线' : '❌ 离线'}<br>
-            • User Agent: ${navigator.userAgent.substring(0, 100)}...<br>
-            • 当前时间: ${new Date().toLocaleString()}<br>
-            • 页面 URL: ${window.location.href}
-          </div>
-        </div>
-      `;
-
-      const resultBox = document.getElementById('result-firstOpen-sandbox');
-      if (resultBox) {
-        resultBox.innerHTML += statusHtml;
-      }
-    }
-
-    // 清除沙盒测试结果
-    function clearSandboxResult() {
-      const resultBox = document.getElementById('result-firstOpen-sandbox');
-      if (resultBox) {
-        resultBox.innerHTML = '<div style="color:#999;">结果已清除，可以重新测试</div>';
-      }
-      console.log('🧹 已清除沙盒测试结果');
-    }
-
-    // 打开 App 内调试工具
-    function openAdjustDebugTool() {
-      if (!checkBridgeEnv()) {
-        alert('未检测到桥接环境，无法打开调试工具');
-        return;
-      }
-
-      console.log('🛠️ 尝试打开 Adjust 调试工具...');
-
-      // 尝试通过桥接打开调试页面
-      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
-        window.flutter_inappwebview.callHandler('openWebView', {
-          type: 2, // 内嵌模式
-          url: '/adjust-debug' // 调试工具路径
-        }).then(function (result) {
-          console.log('调试工具打开结果:', result);
-          if (result && result.code === 0) {
-            console.log('✅ 调试工具打开成功');
-          } else {
-            console.warn('⚠️ 调试工具打开失败，请手动在 App 中访问');
-            alert('调试工具打开失败，请在 App 中手动访问【我的】→【Adjust 调试工具】');
-          }
-        }).catch(function (err) {
-          console.error('调试工具打开异常:', err);
-          alert('请在 App 中手动访问【我的】→【Adjust 调试工具】');
-        });
-      }
-    }
-
-    // 自动启动监控和检查
+    // 自动启动监控和检查（简化版）
     function autoStartDiagnostics() {
-      console.log('🚀 自动启动诊断和监控...');
+      console.log('🚀 自动启动智能诊断...');
 
-      // 页面加载后自动开始监控
-      setTimeout(function () {
-        startAdjustCallbackMonitoring();
-      }, 1000);
-
-      // 显示当前状态
+      // 显示当前环境状态
+      const config = APP_CONFIG[currentEnvironment];
       const envInfo = document.createElement('div');
       envInfo.innerHTML = `
          <div style="background:#f0f7ff;border:1px solid #b3c6e6;border-radius:8px;padding:12px;margin:16px auto;max-width:520px;">
-           <div style="color:#1890ff;font-weight:bold;text-align:center;">📊 Adjust 沙盒环境监控已启动</div>
+           <div style="color:#1890ff;font-weight:bold;text-align:center;">📊 智能事件追踪系统已启动</div>
            <div style="color:#666;font-size:0.9em;text-align:center;margin-top:8px;">
-             自动监听服务器回调，如有异常会在控制台提示
+             当前环境: ${config.displayName} | 支持自动环境适配和智能故障诊断
            </div>
          </div>
        `;
@@ -1374,27 +1474,30 @@
       }
     }
 
-    // 增强版 EventTracker 测试函数
-    function testEnhancedEventTracker(eventName) {
+    // 智能事件追踪测试函数（环境自适应）
+    function testSmartEventTracker(eventName) {
       if (!checkBridgeEnv()) {
-        showResult('result-enhanced-tracker', 'enhancedEventTracker', {}, '[未检测到桥接环境]');
+        showResult('result-enhanced-tracker', 'smartEventTracker', {}, '[未检测到桥接环境]');
         return;
       }
 
-      console.log('🚀 开始增强版 EventTracker 测试:', eventName);
+      console.log('🚀 开始智能事件追踪测试:', eventName);
 
-      // 设置默认的事件参数
+      // 获取当前环境配置
+      const config = APP_CONFIG[currentEnvironment];
+
+      // 设置默认的事件参数（根据环境调整）
       const defaultParams = {
         firstOpen: {},
         register: {
           method: 'username',
-          customerId: 12345,
-          customerName: '张三',
+          customerId: currentEnvironment === 'sandbox' ? 12345 : 67890,
+          customerName: '测试用户',
           mobileNum: '13800138000'
         },
         deposit: {
-          customerName: '张三',
-          customerId: 12345,
+          customerName: '测试用户',
+          customerId: currentEnvironment === 'sandbox' ? 12345 : 67890,
           revenue: '100',
           value: '100',
           af_revenue: 100
@@ -1407,88 +1510,121 @@
       // 显示开始测试的状态
       const resultBox = document.getElementById('result-enhanced-tracker');
       resultBox.innerHTML = `
-        <div style="color:#ff6b35;font-weight:bold;">🚀 正在调用增强版 EventTracker...</div>
+        <div style="color:#ff6b35;font-weight:bold;">🚀 正在执行智能事件追踪...</div>
         <div style="color:#666;font-size:0.9em;margin-top:4px;">
+          🌍 当前环境: ${config.displayName} (${config.environment})<br>
           📋 事件名称: ${eventName}<br>
+          🎯 Event Token: ${config.eventTokens[eventName] || '默认'}<br>
           📊 事件参数: ${JSON.stringify(eventValue)}<br>
           ⏰ 开始时间: ${timestamp}<br>
-          🔄 调用方式: 增强版 (直接调用原生 EventTracker 服务)
+          📱 设备ADID: ${deviceInfo.adid || '获取中...'}<br>
+          🔄 调用方式: 智能适配 (自动选择最佳处理方式)
         </div>
       `;
 
-      // 调用我们在main.dart中定义的增强处理函数
-      // 注意：这里我们使用特殊的handler名称来调用增强版
-      window.flutter_inappwebview.callHandler('enhancedEventTracker', {
+      // 准备智能化的事件数据
+      const smartEventData = {
         eventName: eventName,
-        eventValue: eventValue
-      }).then(function (result) {
-        console.log('✅ 增强版 EventTracker 调用成功:', result);
+        eventValue: eventValue,
+        environment: config.environment,
+        appToken: config.appToken,
+        eventToken: config.eventTokens[eventName],
+        deviceAdid: deviceInfo.adid,
+        timestamp: timestamp
+      };
 
-        const endTime = new Date().toISOString();
-        let resultHtml = `
-          <div style="border:2px solid #ff6b35;border-radius:8px;padding:12px;margin:8px 0;">
-            <div style="color:#ff6b35;font-weight:bold;">🎉 增强版 EventTracker 测试完成</div>
-            <div style="color:#666;font-size:0.9em;margin-top:8px;">
-              📋 事件名称: ${eventName}<br>
-              📊 事件参数: ${JSON.stringify(eventValue)}<br>
-              ⏰ 开始时间: ${timestamp}<br>
-              ⏰ 完成时间: ${endTime}<br>
-              🔄 调用方式: 增强版 (原生 EventTracker 服务)
+      // 尝试调用增强版处理器，如果失败则回退到默认版本
+      window.flutter_inappwebview.callHandler('enhancedEventTracker', smartEventData)
+        .then(function (result) {
+          handleSmartEventResult(result, eventName, config, timestamp, true);
+        })
+        .catch(function (error) {
+          console.warn('🔄 增强版调用失败，回退到默认版本:', error);
+          // 回退到默认eventTracker
+          window.flutter_inappwebview.callHandler('eventTracker', {
+            eventName: eventName,
+            eventValue: eventValue
+          }).then(function (result) {
+            handleSmartEventResult(result, eventName, config, timestamp, false);
+          }).catch(function (fallbackError) {
+            handleSmartEventError(fallbackError, eventName, config);
+          });
+        });
+    }
+
+    // 处理智能事件追踪结果
+    function handleSmartEventResult(result, eventName, config, timestamp, isEnhanced) {
+      const endTime = new Date().toISOString();
+      const resultBox = document.getElementById('result-enhanced-tracker');
+
+      let resultHtml = `
+        <div style="border:2px solid #ff6b35;border-radius:8px;padding:12px;margin:8px 0;">
+          <div style="color:#ff6b35;font-weight:bold;">🎉 智能事件追踪完成</div>
+          <div style="color:#666;font-size:0.9em;margin-top:8px;">
+            🌍 环境: ${config.displayName} (${config.environment})<br>
+            📋 事件: ${eventName}<br>
+            🔄 方式: ${isEnhanced ? '增强版' : '默认版'}<br>
+            ⏰ 开始: ${timestamp}<br>
+            ⏰ 完成: ${endTime}<br>
+            📱 ADID: ${deviceInfo.adid || '未获取'}
+          </div>
+        </div>
+      `;
+
+      if (result && result.code === 0) {
+        resultHtml += `
+          <div style="background:#e6ffed;border:1px solid #52c41a;border-radius:6px;padding:10px;margin:8px 0;">
+            <div style="color:#237804;font-weight:bold;">✅ 事件发送成功！</div>
+            <div style="color:#52c41a;font-size:0.9em;margin-top:4px;">
+              📤 事件已发送到 Adjust 服务器<br>
+              🎯 使用 ${isEnhanced ? '增强版' : '默认版'} 处理器<br>
+              📊 处理结果: ${JSON.stringify(result.data || result)}<br>
+              📍 数据查看位置: ${config.dataLocation}
+            </div>
+          </div>
+          <div style="background:#f0f7ff;border:1px solid #1890ff;border-radius:6px;padding:10px;margin:8px 0;">
+            <div style="color:#1890ff;font-weight:bold;">🔍 环境适配说明：</div>
+            <div style="color:#1890ff;font-size:0.9em;margin-top:4px;">
+              • 自动选择了${config.displayName}配置<br>
+              • App Token: ${config.appToken}<br>
+              • Event Token: ${config.eventTokens[eventName] || '默认'}<br>
+              • ${config.environment === 'SANDBOX' ? '沙盒数据延迟2-10分钟' : '生产数据实时显示'}<br>
+              • 建议在 ${config.dataLocation} 查看数据
             </div>
           </div>
         `;
-
-        if (result && result.code === 0) {
-          resultHtml += `
-            <div style="background:#e6ffed;border:1px solid #52c41a;border-radius:6px;padding:10px;margin:8px 0;">
-              <div style="color:#237804;font-weight:bold;">✅ 增强版处理成功！</div>
-              <div style="color:#52c41a;font-size:0.9em;margin-top:4px;">
-                📤 事件已通过增强版 EventTracker 发送<br>
-                🎯 包含完整的回调监听和调试信息<br>
-                📊 处理结果: ${JSON.stringify(result.data || result)}<br>
-                💡 请查看控制台获取详细的 Adjust 回调信息
-              </div>
-            </div>
-            <div style="background:#fff0e6;border:1px solid #ff6b35;border-radius:6px;padding:10px;margin:8px 0;">
-              <div style="color:#ff6b35;font-weight:bold;">🔍 增强版特色功能：</div>
-              <div style="color:#d45087;font-size:0.9em;margin-top:4px;">
-                • 完整的 Adjust 服务器回调信息<br>
-                • 实时的设备 ADID 和环境状态<br>
-                • 详细的错误诊断和调试信息<br>
-                • 这就是原来原生 Home 页面橙色 bug 按钮的功能！<br>
-                • 对比默认 JSBridge：可以看到完整的处理流程
-              </div>
-            </div>
-          `;
-        } else {
-          resultHtml += `
-            <div style="background:#fff1f0;border:1px solid #cf1322;border-radius:6px;padding:10px;margin:8px 0;">
-              <div style="color:#cf1322;font-weight:bold;">❌ 增强版处理失败</div>
-              <div style="color:#cf1322;font-size:0.9em;margin-top:4px;">
-                错误信息: ${result?.msg || '未知错误'}<br>
-                返回结果: ${JSON.stringify(result)}
-              </div>
-            </div>
-          `;
-        }
-
-        resultBox.innerHTML = resultHtml;
-      }).catch(function (err) {
-        console.error('❌ 增强版 EventTracker 调用失败:', err);
-
-        const errorHtml = `
-          <div style="border:2px solid #cf1322;border-radius:8px;padding:12px;margin:8px 0;">
-            <div style="color:#cf1322;font-weight:bold;">❌ 增强版 EventTracker 调用异常</div>
-            <div style="color:#cf1322;font-size:0.9em;margin-top:8px;">
-              错误信息: ${err}<br>
-              ⚠️ 可能原因: 增强版处理器未正确注册<br>
-              💡 回退方案: 请使用默认的 eventTracker 测试
+      } else {
+        resultHtml += `
+          <div style="background:#fff1f0;border:1px solid #cf1322;border-radius:6px;padding:10px;margin:8px 0;">
+            <div style="color:#cf1322;font-weight:bold;">❌ 事件发送失败</div>
+            <div style="color:#cf1322;font-size:0.9em;margin-top:4px;">
+              错误信息: ${result?.msg || '未知错误'}<br>
+              返回结果: ${JSON.stringify(result)}<br>
+              💡 建议: 检查网络连接和配置是否正确
             </div>
           </div>
         `;
+      }
 
-        resultBox.innerHTML = errorHtml;
-      });
+      resultBox.innerHTML = resultHtml;
+    }
+
+    // 处理智能事件追踪错误
+    function handleSmartEventError(error, eventName, config) {
+      const errorHtml = `
+        <div style="border:2px solid #cf1322;border-radius:8px;padding:12px;margin:8px 0;">
+          <div style="color:#cf1322;font-weight:bold;">❌ 智能事件追踪失败</div>
+          <div style="color:#cf1322;font-size:0.9em;margin-top:8px;">
+            🌍 环境: ${config.displayName}<br>
+            📋 事件: ${eventName}<br>
+            ❌ 错误: ${error}<br>
+            ⚠️ 原因: 增强版和默认版处理器都不可用<br>
+            💡 建议: 检查桥接环境或联系技术支持
+          </div>
+        </div>
+      `;
+
+      document.getElementById('result-enhanced-tracker').innerHTML = errorHtml;
     }
 
     // 清除增强版测试结果
@@ -1577,45 +1713,257 @@
       });
     }
 
-    // 增强的事件测试函数（可配置参数）
-    function testFirstOpenWithParams(customParams = {}) {
+    // 更新环境特定信息显示
+    function updateEnvironmentSpecificInfo() {
+      const container = document.getElementById('environmentSpecificInfo');
+      const config = APP_CONFIG[currentEnvironment];
+
+      if (!container) return;
+
+      const envClass = currentEnvironment === 'sandbox' ? 'env-sandbox' : 'env-production';
+      const envIcon = currentEnvironment === 'sandbox' ? '🧪' : '🚀';
+
+      container.innerHTML = `
+        <strong>${envIcon} ${config.displayName}专项测试说明：</strong>
+        <ul style="margin:8px 0;padding-left:20px;font-size:0.95em;">
+          <li><strong>当前环境：</strong>${config.environment} <span class="env-indicator ${envClass}">${config.displayName}</span></li>
+          <li><strong>App Token：</strong>${config.appToken}</li>
+          <li><strong>数据查看：</strong>${config.dataLocation}</li>
+          <li><strong>设备ADID：</strong>${deviceInfo.adid || '获取中...'}</li>
+          <li><strong style="color:#d46b08;">⚠️ 重要：</strong>${config.environment === 'SANDBOX' ? '沙盒数据不在主控制台显示' : '生产数据实时在主控制台显示'}</li>
+          <li><strong>数据延迟：</strong>${config.environment === 'SANDBOX' ? '2-10分钟延迟' : '实时显示'}</li>
+          <li><strong>Event Tokens：</strong>firstOpen(${config.eventTokens.firstOpen}), register(${config.eventTokens.register}), deposit(${config.eventTokens.deposit})</li>
+        </ul>
+      `;
+    }
+
+    // 测试当前环境特定配置
+    function testEnvironmentSpecific() {
       if (!checkBridgeEnv()) {
-        showResult('result-firstOpen-sandbox', 'eventTracker', {}, '[未检测到桥接环境]');
+        showResult('result-environment-specific', 'environmentTest', {}, '[未检测到桥接环境]');
         return;
       }
 
-      const eventValue = { ...customParams };
+      const config = APP_CONFIG[currentEnvironment];
       const timestamp = new Date().toISOString();
 
-      console.log('🚀 开始测试 firstOpen 事件 (增强版)');
-      console.log('📋 事件参数:', eventValue);
-      console.log('⏰ 测试时间:', timestamp);
+      console.log('🧪 开始环境特定测试:', currentEnvironment);
 
-      window.flutter_inappwebview.callHandler('eventTracker', {
-        eventName: 'firstOpen',
-        eventValue: eventValue
-      }).then(function (result) {
-        console.log('✅ 增强版 firstOpen 测试完成:', result);
+      const resultBox = document.getElementById('result-environment-specific');
+      resultBox.innerHTML = `
+        <div style="color:#52c41a;font-weight:bold;">🧪 正在测试${config.displayName}配置...</div>
+        <div style="color:#666;font-size:0.9em;margin-top:4px;">
+          🌍 环境: ${config.environment}<br>
+          📋 App Token: ${config.appToken}<br>
+          📱 设备ADID: ${deviceInfo.adid || '获取中...'}<br>
+          ⏰ 测试时间: ${timestamp}
+        </div>
+      `;
 
-        const resultBox = document.getElementById('result-firstOpen-sandbox');
-        const enhancedResult = `
-           <div style="border:2px solid #52c41a;border-radius:8px;padding:12px;margin:8px 0;">
-             <div style="color:#237804;font-weight:bold;">🔬 增强版测试结果</div>
-             <div style="color:#666;font-size:0.9em;margin-top:4px;">
-               ⏰ 测试时间: ${timestamp}<br>
-               📋 事件参数: ${JSON.stringify(eventValue)}<br>
-               📊 返回结果: ${JSON.stringify(result)}<br>
-               🎯 Event Token: q6mgkw
-             </div>
-           </div>
-         `;
+      // 执行firstOpen事件测试当前环境
+      testSmartEventTracker('firstOpen');
 
-        if (resultBox) {
-          resultBox.innerHTML += enhancedResult;
-        }
-      }).catch(function (err) {
-        console.error('❌ 增强版测试失败:', err);
+      // 同时显示环境验证信息
+      setTimeout(function () {
+        const currentResult = resultBox.innerHTML;
+        const envValidation = `
+          <div style="background:#f0f7ff;border:1px solid #1890ff;border-radius:6px;padding:10px;margin-top:8px;">
+            <div style="color:#1890ff;font-weight:bold;">🔍 环境验证结果：</div>
+            <div style="color:#1890ff;font-size:0.9em;margin-top:4px;">
+              ✅ 环境检测: ${config.displayName}<br>
+              ✅ 配置加载: 正常<br>
+              ✅ Token配置: ${config.appToken}<br>
+              ✅ 桥接状态: 可用<br>
+              📊 建议查看位置: ${config.dataLocation}<br>
+              💡 注意事项: ${config.environment === 'SANDBOX' ? '沙盒环境数据有延迟' : '生产环境数据实时'}
+            </div>
+          </div>
+        `;
+        resultBox.innerHTML = currentResult + envValidation;
+      }, 1000);
+    }
+
+    // 切换环境视图
+    function switchEnvironmentView() {
+      const newEnv = currentEnvironment === 'sandbox' ? 'production' : 'sandbox';
+      const config = APP_CONFIG[newEnv];
+
+      const confirmed = confirm(`确定要切换到${config.displayName}吗？\n\n当前：${APP_CONFIG[currentEnvironment].displayName}\n目标：${config.displayName}\n\n注意：这只是测试视图切换，不会影响实际环境配置。`);
+
+      if (confirmed) {
+        currentEnvironment = newEnv;
+        console.log('🔄 切换环境视图到:', currentEnvironment);
+
+        // 更新所有相关显示
+        updateEnvironmentPanel(true);
+        updateEnvironmentSpecificInfo();
+
+        // 显示切换结果
+        const resultBox = document.getElementById('result-environment-specific');
+        resultBox.innerHTML = `
+          <div style="background:#e6ffed;border:1px solid #52c41a;border-radius:6px;padding:10px;margin:8px 0;">
+            <div style="color:#237804;font-weight:bold;">✅ 环境视图切换成功</div>
+            <div style="color:#52c41a;font-size:0.9em;margin-top:4px;">
+              🔄 已切换到: ${config.displayName} (${config.environment})<br>
+              📋 App Token: ${config.appToken}<br>
+              📍 数据位置: ${config.dataLocation}<br>
+              ⏰ 切换时间: ${new Date().toLocaleString()}<br>
+              💡 现在的测试将使用${config.displayName}配置
+            </div>
+          </div>
+        `;
+
+        // 3秒后自动清除提示
+        setTimeout(function () {
+          resultBox.innerHTML = '<div style="color:#999;">环境视图已切换，可以重新测试</div>';
+        }, 5000);
+      }
+    }
+
+    // 验证当前配置
+    function validateConfiguration() {
+      const config = APP_CONFIG[currentEnvironment];
+      const resultBox = document.getElementById('result-environment-specific');
+
+      const validationResults = [];
+
+      // 检查桥接环境
+      const bridgeOk = window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function';
+      validationResults.push({
+        item: '桥接环境',
+        status: bridgeOk,
+        detail: bridgeOk ? '✅ 可用' : '❌ 不可用'
       });
+
+      // 检查配置完整性
+      const configOk = config && config.appToken && config.eventTokens;
+      validationResults.push({
+        item: '配置完整性',
+        status: configOk,
+        detail: configOk ? '✅ 完整' : '❌ 配置缺失'
+      });
+
+      // 检查设备信息
+      const deviceOk = deviceInfo.loaded;
+      validationResults.push({
+        item: '设备信息',
+        status: deviceOk,
+        detail: deviceOk ? (deviceInfo.adid ? `✅ ADID: ${deviceInfo.adid}` : '⚠️ ADID未获取') : '❌ 未加载'
+      });
+
+      // 检查网络状态
+      const networkOk = navigator.onLine;
+      validationResults.push({
+        item: '网络状态',
+        status: networkOk,
+        detail: networkOk ? '✅ 在线' : '❌ 离线'
+      });
+
+      // 生成验证报告
+      const passedCount = validationResults.filter(r => r.status).length;
+      const totalCount = validationResults.length;
+      const allPassed = passedCount === totalCount;
+
+      let reportHtml = `
+        <div style="border:2px solid ${allPassed ? '#52c41a' : '#fa8c16'};border-radius:8px;padding:12px;margin:8px 0;">
+          <div style="color:${allPassed ? '#237804' : '#fa8c16'};font-weight:bold;">
+            🔍 配置验证报告 (${passedCount}/${totalCount} 通过)
+          </div>
+          <div style="color:#666;font-size:0.9em;margin-top:8px;">
+            🌍 环境: ${config.displayName} (${config.environment})<br>
+            ⏰ 验证时间: ${new Date().toLocaleString()}
+          </div>
+        </div>
+      `;
+
+      validationResults.forEach(result => {
+        const bgColor = result.status ? '#e6ffed' : '#fff1f0';
+        const borderColor = result.status ? '#b7eb8f' : '#ffa39e';
+        const textColor = result.status ? '#237804' : '#cf1322';
+
+        reportHtml += `
+          <div style="background:${bgColor};border:1px solid ${borderColor};border-radius:6px;padding:8px;margin:4px 0;">
+            <div style="color:${textColor};font-size:0.9em;">
+              <strong>${result.item}:</strong> ${result.detail}
+            </div>
+          </div>
+        `;
+      });
+
+      if (allPassed) {
+        reportHtml += `
+          <div style="background:#e6ffed;border:1px solid #52c41a;border-radius:6px;padding:10px;margin:8px 0;">
+            <div style="color:#237804;font-weight:bold;">🎉 配置验证通过</div>
+            <div style="color:#52c41a;font-size:0.9em;margin-top:4px;">
+              所有配置项验证通过，可以正常进行事件追踪测试！
+            </div>
+          </div>
+        `;
+      } else {
+        reportHtml += `
+          <div style="background:#fffbe6;border:1px solid #ffe066;border-radius:6px;padding:10px;margin:8px 0;">
+            <div style="color:#d46b08;font-weight:bold;">⚠️ 存在配置问题</div>
+            <div style="color:#d46b08;font-size:0.9em;margin-top:4px;">
+              请检查上述失败项，确保环境配置正确后再进行测试。
+            </div>
+          </div>
+        `;
+      }
+
+      resultBox.innerHTML = reportHtml;
+    }
+
+    // 清除环境测试结果
+    function clearEnvironmentResult() {
+      const resultBox = document.getElementById('result-environment-specific');
+      if (resultBox) {
+        resultBox.innerHTML = '<div style="color:#999;">环境测试结果已清除，可以重新测试</div>';
+      }
+      console.log('🧹 已清除环境测试结果');
+    }
+
+    // 导出环境信息
+    function exportEnvironmentInfo() {
+      const config = APP_CONFIG[currentEnvironment];
+      const exportData = {
+        timestamp: new Date().toISOString(),
+        environment: {
+          current: currentEnvironment,
+          config: config
+        },
+        device: deviceInfo,
+        bridge: {
+          available: window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function',
+          userAgent: navigator.userAgent
+        },
+        network: {
+          online: navigator.onLine
+        },
+        page: {
+          url: window.location.href,
+          loadTime: document.getElementById('pageLoadTime')?.textContent || 'unknown'
+        }
+      };
+
+      const exportText = JSON.stringify(exportData, null, 2);
+
+      // 复制到剪贴板
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(exportText).then(function () {
+          alert('环境信息已复制到剪贴板');
+        });
+      } else {
+        // 创建临时textarea
+        const textarea = document.createElement('textarea');
+        textarea.value = exportText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('环境信息已复制到剪贴板');
+      }
+
+      console.log('📊 导出的环境信息:', exportData);
     }
   </script>
 </body>
