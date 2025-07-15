@@ -645,7 +645,7 @@
       }
     }
 
-    // 获取设备信息（ADID等）
+    // 获取设备信息（包含ADID）
     function fetchDeviceInfo() {
       console.log('📱 开始获取设备信息...');
 
@@ -654,7 +654,7 @@
         return;
       }
 
-      // 尝试通过多种方式获取设备信息
+      // 获取设备信息包括ADID
       Promise.all([
         getAdjustAdid(),
         getDeviceInfo(),
@@ -662,23 +662,8 @@
       ]).then(function (results) {
         const [adidResult, deviceResult, userAgentResult] = results;
 
-        // 处理ADID - 修复版
-        if (adidResult && adidResult.hasAdid && adidResult.adid && adidResult.adid.trim() !== '') {
-          // 成功获取到ADID
-          deviceInfo.adid = adidResult.adid;
-          document.getElementById('deviceAdid').innerHTML = `<span style="color:#52c41a;">${adidResult.adid}</span>`;
-          console.log('✅ 首次获取ADID成功:', adidResult.adid);
-        } else if (adidResult && adidResult.error) {
-          // 有具体错误信息
-          document.getElementById('deviceAdid').innerHTML = `<span style="color:#cf1322;">获取失败: ${adidResult.error}</span>`;
-          console.log('❌ 首次获取ADID失败:', adidResult.error);
-        } else {
-          // ADID暂未获取到，延迟重试
-          document.getElementById('deviceAdid').innerHTML = '<span style="color:#fa8c16;">获取中...</span>';
-          console.log('⚠️ ADID暂未获取到，2秒后重试...');
-          // 延迟重试
-          setTimeout(retryGetAdid, 2000);
-        }
+        // 处理ADID获取结果
+        handleAdidResult(adidResult);
 
         deviceInfo.loaded = true;
         console.log('✅ 设备信息获取完成:', deviceInfo);
@@ -686,6 +671,86 @@
         console.error('❌ 设备信息获取失败:', error);
         document.getElementById('deviceAdid').innerHTML = '<span style="color:#cf1322;">获取失败</span>';
       });
+    }
+
+    // 获取Adjust ADID - 简化版
+    function getAdjustAdid() {
+      return new Promise(function (resolve) {
+        if (!window.flutter_inappwebview) {
+          resolve({ success: false, error: 'No bridge' });
+          return;
+        }
+
+        console.log('🔍 开始获取 ADID...');
+
+        // 调用Flutter端的getAdjustAdid处理器
+        window.flutter_inappwebview.callHandler('getAdjustAdid', {})
+          .then(function (result) {
+            console.log('📱 getAdjustAdid 返回结果:', result);
+
+            if (result && result.code === 0 && result.data && result.data.adid) {
+              resolve({
+                success: true,
+                adid: result.data.adid,
+                source: result.data.source || 'adjust_sdk'
+              });
+            } else {
+              resolve({
+                success: false,
+                error: result?.msg || 'ADID暂未获取到',
+                code: result?.code
+              });
+            }
+          })
+          .catch(function (error) {
+            console.error('❌ getAdjustAdid 调用失败:', error);
+            resolve({ success: false, error: 'JSBridge调用失败' });
+          });
+      });
+    }
+
+    // 处理ADID获取结果
+    function handleAdidResult(adidResult) {
+      const adidElement = document.getElementById('deviceAdid');
+
+      if (adidResult.success && adidResult.adid) {
+        // 成功获取到ADID
+        deviceInfo.adid = adidResult.adid;
+        adidElement.innerHTML = `<span style="color:#52c41a;">${adidResult.adid}</span>`;
+        console.log('✅ ADID获取成功:', adidResult.adid);
+      } else if (adidResult.code === 1) {
+        // ADID暂未获取到，设置延迟重试
+        adidElement.innerHTML = '<span style="color:#fa8c16;">SDK初始化中...</span>';
+        console.log('⚠️ ADID暂未获取到，3秒后重试...');
+        setTimeout(retryGetAdid, 3000);
+      } else {
+        // 获取失败
+        const errorMsg = adidResult.error || '获取失败';
+        adidElement.innerHTML = `<span style="color:#cf1322;">${errorMsg}</span>`;
+        console.log('❌ ADID获取失败:', errorMsg);
+      }
+    }
+
+    // 重试获取ADID
+    function retryGetAdid() {
+      console.log('🔄 重试获取ADID...');
+
+      getAdjustAdid()
+        .then(function (result) {
+          console.log('🔄 重试获取ADID结果:', result);
+
+          const adidElement = document.getElementById('deviceAdid');
+
+          if (result.success && result.adid) {
+            deviceInfo.adid = result.adid;
+            adidElement.innerHTML = `<span style="color:#52c41a;">${result.adid}</span>`;
+            console.log('✅ 重试获取ADID成功:', result.adid);
+          } else {
+            const errorMsg = result.error || 'ADID暂未获取到';
+            adidElement.innerHTML = `<span style="color:#fa8c16;">${errorMsg}</span>`;
+            console.log('⚠️ 重试后仍无ADID:', errorMsg);
+          }
+        });
     }
 
     // 获取 Adjust 配置信息 - 从Flutter端动态获取
@@ -714,75 +779,7 @@
       });
     }
 
-    // 获取Adjust ADID - 修复版
-    function getAdjustAdid() {
-      return new Promise(function (resolve, reject) {
-        if (!window.flutter_inappwebview) {
-          console.log('❌ 桥接环境不可用，无法获取ADID');
-          reject('No bridge');
-          return;
-        }
 
-        console.log('🔍 开始调用 getAdjustAdid JSBridge...');
-
-        // 调用Flutter端的getAdjustAdid处理器
-        window.flutter_inappwebview.callHandler('getAdjustAdid', {})
-          .then(function (result) {
-            console.log('📱 getAdjustAdid JSBridge 返回结果:', result);
-
-            // 检查返回结果的结构
-            if (result && typeof result === 'object') {
-              if (result.code === 0 && result.data && result.data.adid && result.data.adid.trim() !== '') {
-                // 成功获取到ADID
-                console.log('✅ ADID获取成功:', result.data.adid);
-                resolve({
-                  adid: result.data.adid,
-                  hasAdid: true,
-                  source: result.data.source || 'adjust_sdk',
-                  timestamp: result.data.timestamp || Date.now()
-                });
-              } else if (result.code === 1) {
-                // ADID暂未获取到（正常情况，SDK初始化中）
-                console.log('⚠️ ADID暂未获取到，SDK可能正在初始化...');
-                resolve({
-                  adid: '',
-                  hasAdid: false,
-                  note: result.msg || 'ADID暂未获取到',
-                  timestamp: Date.now()
-                });
-              } else {
-                // 其他错误
-                console.log('❌ ADID获取失败:', result.msg || '未知错误');
-                resolve({
-                  adid: '',
-                  hasAdid: false,
-                  error: result.msg || '获取失败',
-                  timestamp: Date.now()
-                });
-              }
-            } else {
-              // 返回结果格式异常
-              console.log('❌ ADID返回结果格式异常:', result);
-              resolve({
-                adid: '',
-                hasAdid: false,
-                error: 'JSBridge返回格式异常',
-                timestamp: Date.now()
-              });
-            }
-          })
-          .catch(function (error) {
-            console.error('❌ getAdjustAdid JSBridge调用失败:', error);
-            // JSBridge调用失败
-            resolve({
-              adid: '',
-              hasAdid: false,
-              error: 'JSBridge调用失败: ' + error,
-              timestamp: Date.now()
-            });
-          });
-      });
-    }
 
     // 获取设备信息（简化版）
     function getDeviceInfo() {
@@ -815,37 +812,7 @@
       });
     }
 
-    // 重试获取ADID - 修复版
-    function retryGetAdid() {
-      console.log('🔄 重试获取ADID...');
-      getAdjustAdid()
-        .then(function (result) {
-          console.log('🔄 重试获取ADID结果:', result);
 
-          if (result && result.hasAdid && result.adid && result.adid.trim() !== '') {
-            // 成功获取到ADID
-            deviceInfo.adid = result.adid;
-            document.getElementById('deviceAdid').innerHTML = `<span style="color:#52c41a;">${result.adid}</span>`;
-            console.log('✅ 重试获取ADID成功:', result.adid);
-          } else if (result && result.error) {
-            // 有具体错误信息
-            document.getElementById('deviceAdid').innerHTML = `<span style="color:#cf1322;">获取失败: ${result.error}</span>`;
-            console.log('❌ 重试获取ADID失败:', result.error);
-          } else if (result && result.note) {
-            // ADID暂未获取到但有说明
-            document.getElementById('deviceAdid').innerHTML = `<span style="color:#fa8c16;">暂无ADID (${result.note})</span>`;
-            console.log('⚠️ 重试后仍无ADID:', result.note);
-          } else {
-            // 默认情况
-            document.getElementById('deviceAdid').innerHTML = '<span style="color:#fa8c16;">暂无ADID</span>';
-            console.log('⚠️ 重试后仍无ADID');
-          }
-        })
-        .catch(function (error) {
-          console.error('❌ 重试获取ADID失败:', error);
-          document.getElementById('deviceAdid').innerHTML = '<span style="color:#cf1322;">获取失败</span>';
-        });
-    }
 
     // 检测当前环境 - 从Flutter端动态获取
     function detectCurrentEnvironment() {
